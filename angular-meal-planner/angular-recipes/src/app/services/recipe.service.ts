@@ -50,7 +50,7 @@ export class RecipeService {
 
             const jsonServerResult = await this.jsonServer.getRecipeDetails(id);
             if (jsonServerResult && jsonServerResult.id) {
-                console.log('RecipeService: Successfully fetched from JSON Server', jsonServerResult);
+                console.log('RecipeService: Successfully fetched from JSON Server');
                 return jsonServerResult;
             }
         } catch (e) {

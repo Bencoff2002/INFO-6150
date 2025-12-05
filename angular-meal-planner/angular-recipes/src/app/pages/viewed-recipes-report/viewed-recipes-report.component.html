@@ -1,0 +1,88 @@
+<div class="report-container">
+    <!-- Header -->
+    <div class="report-header">
+        <button class="back-button" (click)="goBack()" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" fill="currentColor">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+            Back
+        </button>
+        <h1>Favourite Recipes</h1>
+        <div class="export-buttons">
+            <button class="export-btn csv-btn" (click)="exportToCSV()" title="Export to CSV">
+                <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 24 24" width="18">
+                    <path
+                        d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z" />
+                </svg>
+                CSV
+            </button>
+            <button class="export-btn pdf-btn" (click)="exportToPDF()" title="Export to PDF">
+                <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 24 24" width="18">
+                    <path
+                        d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z" />
+                </svg>
+                PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Generating report...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-container">
+        <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 24 24" width="48">
+            <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
+        <p>{{ error }}</p>
+        <button class="retry-btn" (click)="loadReport()">Retry</button>
+    </div>
+
+    <!-- Report Content - Table View -->
+    <div *ngIf="!loading && !error && viewedRecipes.length > 0" class="report-content">
+        <div class="table-container">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th class="col-rank">Rank</th>
+                        <th class="col-recipe">Recipe Name</th>
+                        <th class="col-views">Views</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let recipe of viewedRecipes; let i = index">
+                        <td class="col-rank">
+                            <span class="rank-number">{{ i + 1 }}</span>
+                        </td>
+                        <td class="col-recipe">
+                            <span class="recipe-name">{{ recipe.recipeTitle }}</span>
+                        </td>
+                        <td class="col-views">
+                            <span class="view-count">{{ recipe.viewCount }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="report-footer">
+            <p>Generated: {{ currentDate | date:'medium' }}</p>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && !error && viewedRecipes.length === 0" class="empty-state">
+        <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" height="80" viewBox="0 0 24 24" width="80">
+                <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+            </svg>
+        </div>
+        <h3>No Data Available</h3>
+        <p>This report will be generated once users start viewing recipes</p>
+    </div>
+</div>

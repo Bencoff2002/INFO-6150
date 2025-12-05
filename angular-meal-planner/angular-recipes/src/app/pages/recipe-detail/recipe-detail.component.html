@@ -1,0 +1,117 @@
+<div class="recipe-detail-container">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-container">
+        <div class="alert alert-error">{{ error }}</div>
+    </div>
+
+    <!-- Recipe Content -->
+    <div *ngIf="recipe && !loading" class="recipe-content">
+
+        <!-- Back Button -->
+        <div class="back-button-container">
+            <button title="Go back" class="back-button" (click)="goBack()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+            </button>
+            <span *ngIf="getBackButtonText()" class="back-text">Back to {{ getBackButtonText() }}</span>
+        </div>
+
+        <!-- Recipe Header -->
+        <div class="recipe-header">
+            <img [src]="recipe.image" [alt]="recipe.title" class="recipe-image">
+            <h1 class="recipe-title">{{ recipe.title }}</h1>
+            <div *ngIf="recipe.summary" class="recipe-summary" [innerHTML]="sanitizeHtml(recipe.summary)">
+            </div>
+        </div>
+
+
+
+        <!-- Authenticated Content -->
+        <div *ngIf="user$ | async as user; else loginPrompt" class="detail-grid">
+            <!-- Ingredients Column -->
+            <div class="detail-column">
+                <h2 class="column-title">Ingredients</h2>
+
+                <!-- Extended Ingredients (from Spoonacular) -->
+                <ul *ngIf="recipe.extendedIngredients?.length > 0" class="ingredients-list">
+                    <li *ngFor="let ing of recipe.extendedIngredients" class="ingredient-item">
+                        {{ ing.original || (ing.amount + ' ' + ing.unit + ' ' + ing.name) }}
+                    </li>
+                </ul>
+
+                <!-- String Ingredients (from custom recipes) -->
+                <div *ngIf="(!recipe.extendedIngredients || recipe.extendedIngredients.length === 0) && recipe.ingredients"
+                    class="ingredients-text">
+                    {{ recipe.ingredients }}
+                </div>
+
+                <!-- No Ingredients -->
+                <p *ngIf="(!recipe.extendedIngredients || recipe.extendedIngredients.length === 0) && !recipe.ingredients"
+                    class="no-content">
+                    No ingredients available.
+                </p>
+            </div>
+
+            <!-- Instructions Column -->
+            <div class="detail-column">
+                <h2 class="column-title">Instructions</h2>
+
+                <div *ngIf="recipe.instructions" class="instructions-text"
+                    [innerHTML]="sanitizeHtml(recipe.instructions)">
+                </div>
+
+                <p *ngIf="!recipe.instructions" class="no-content">
+                    No instructions available.
+                </p>
+            </div>
+
+            <!-- Nutrition Column -->
+            <div class="detail-column">
+                <h2 class="column-title">Nutrition</h2>
+
+                <!-- Detailed Nutrition (from Spoonacular) -->
+                <ul *ngIf="recipe.nutrition && recipe.nutrition.nutrients" class="nutrition-list">
+                    <li *ngFor="let nutrient of recipe.nutrition.nutrients.slice(0, 8)" class="nutrition-item">
+                        <span class="nutrient-name">{{ nutrient.name }}</span>
+                        <span class="nutrient-value">{{ nutrient.amount }} {{ nutrient.unit }}</span>
+                    </li>
+                </ul>
+
+                <!-- Basic Nutrition Fallback -->
+                <div *ngIf="!recipe.nutrition || !recipe.nutrition.nutrients">
+                    <p class="nutrition-subtitle">Basic nutrition per serving:</p>
+                    <ul class="nutrition-list">
+                        <li *ngIf="recipe.servings" class="nutrition-item">
+                            <span class="nutrient-name">Servings</span>
+                            <span class="nutrient-value">{{ recipe.servings }}</span>
+                        </li>
+                        <li *ngIf="recipe.readyInMinutes" class="nutrition-item">
+                            <span class="nutrient-name">Ready in</span>
+                            <span class="nutrient-value">{{ recipe.readyInMinutes }} min</span>
+                        </li>
+                        <li class="nutrition-item">
+                            <span class="no-content-italic">Detailed nutrition info not available</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unauthenticated Prompt -->
+        <ng-template #loginPrompt>
+            <div class="login-prompt">
+                <div class="alert alert-info">
+                    Please log in to view full recipe details (ingredients, instructions & nutrition).
+                </div>
+                <button class="login-button" (click)="navigateToLogin()">Log in</button>
+            </div>
+        </ng-template>
+    </div>
+</div>

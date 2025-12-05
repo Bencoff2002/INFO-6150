@@ -1,5 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { NavbarComponent } from '../components/navbar/navbar.component';
+import { RecipeCardComponent } from '../components/recipe-card/recipe-card.component';
 import { RecipeService } from '../services/recipe.service';
+import { AuthService } from '../services/auth.service';
 
 interface Category {
     label: string;
@@ -9,6 +15,8 @@ interface Category {
 
 @Component({
     selector: 'app-home',
+    standalone: true,
+    imports: [CommonModule, FormsModule, NavbarComponent, RecipeCardComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss']
 })
@@ -25,6 +33,7 @@ export class HomeComponent implements OnInit {
 
     user: any = { name: 'Demo User' }; // Replace with actual auth context
     favorites: any[] = []; // Replace with actual favorites
+    isAdmin = false;
 
     categories: Category[] = [
         { label: 'All', icon: '🍽️', value: null },
@@ -39,13 +48,41 @@ export class HomeComponent implements OnInit {
         { label: 'Quick & Easy', icon: '⚡', value: { quickEasy: true } }
     ];
 
-    constructor(private recipeService: RecipeService) { }
+    constructor(
+        private recipeService: RecipeService,
+        private cdr: ChangeDetectorRef,
+        private router: Router,
+        private authService: AuthService
+    ) { }
 
-    ngOnInit() {
-        this.loadRecipes();
+    async ngOnInit() {
+        // Get current user status first
+        const currentUser = this.authService.getCurrentUser();
+        this.isAdmin = currentUser?.isAdmin || false;
+        this.user = currentUser;
+
+        // Also subscribe to changes
+        this.authService.user$.subscribe(user => {
+            const wasAdmin = this.isAdmin;
+            this.isAdmin = user?.isAdmin || false;
+            this.user = user;
+
+            // If admin status changed and now not admin, load recipes
+            if (wasAdmin && !this.isAdmin) {
+                this.loadRecipes();
+            }
+        });
+
+        // Only load recipes if not admin
+        if (!this.isAdmin) {
+            await this.loadRecipes();
+        }
     }
 
     async loadRecipes() {
+        // Don't load recipes for admins
+        if (this.isAdmin) return;
+
         this.loading = true;
         this.error = null;
         try {
@@ -53,14 +90,20 @@ export class HomeComponent implements OnInit {
             this.recipes = res.results;
             this.totalResults = res.totalResults ?? res.results?.length ?? 0;
             this.isSearchMode = false;
+            this.cdr.detectChanges();
         } catch (e) {
             this.error = 'Failed to load recipes';
+            this.cdr.detectChanges();
         } finally {
             this.loading = false;
+            this.cdr.detectChanges();
         }
     }
 
-    async handleSearch() {
+    async handleSearch(term?: string) {
+        if (term) {
+            this.searchTerm = term;
+        }
         if (!this.searchTerm.trim()) return;
         this.loading = true;
         this.error = null;
@@ -71,10 +114,13 @@ export class HomeComponent implements OnInit {
             this.totalResults = res.totalResults ?? res.results?.length ?? 0;
             this.currentPage = 1;
             this.isSearchMode = true;
+            this.cdr.detectChanges();
         } catch (e) {
             this.error = 'Failed to search recipes';
+            this.cdr.detectChanges();
         } finally {
             this.loading = false;
+            this.cdr.detectChanges();
         }
     }
 
@@ -90,10 +136,13 @@ export class HomeComponent implements OnInit {
             this.totalResults = res.totalResults ?? res.results?.length ?? 0;
             this.currentPage = page;
             this.isSearchMode = true;
+            this.cdr.detectChanges();
         } catch (e) {
             this.error = 'Failed to load page';
+            this.cdr.detectChanges();
         } finally {
             this.loading = false;
+            this.cdr.detectChanges();
         }
     }
 
@@ -114,16 +163,34 @@ export class HomeComponent implements OnInit {
             this.recipes = res.results;
             this.totalResults = res.totalResults ?? res.results?.length ?? 0;
             this.isSearchMode = true;
+            this.cdr.detectChanges();
         } catch (e) {
             this.error = 'Failed to filter recipes';
             this.recipes = [];
+            this.cdr.detectChanges();
         } finally {
             this.loading = false;
+            this.cdr.detectChanges();
         }
     }
 
     handleLogout() {
         this.user = null;
-        // Add actual logout logic here
+        this.authService.logout();
+        this.router.navigate(['/']);
+    }
+
+    // Admin navigation methods
+    navigateToStatistics() {
+        // Navigate to statistics page
+        this.router.navigate(['/admin/statistics']);
+    }
+
+    navigateToUserManagement() {
+        this.router.navigate(['/admin/users']);
+    }
+
+    navigateToReports() {
+        this.router.navigate(['/admin/reports']);
     }
 }

@@ -1,0 +1,125 @@
+<div class="users-management">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+        <button class="back-button" (click)="goBack()" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+            Back
+        </button>
+        <div class="header-content">
+            <h1>User Management</h1>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+        <div class="loader"></div>
+        <p>Loading users...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-state">
+        <svg xmlns="http://www.w3.org/2000/svg" height="56" viewBox="0 0 24 24" width="56">
+            <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
+        <h3>Unable to Load Data</h3>
+        <p>{{error}}</p>
+        <button class="retry-button" (click)="loadUsers()">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 24 24" width="18">
+                <path
+                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+            </svg>
+            Retry
+        </button>
+    </div>
+
+    <!-- Users Table -->
+    <div *ngIf="!loading && !error" class="dashboard-content">
+        <div class="users-container">
+            <div class="table-wrapper">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th class="th-number">#</th>
+                            <th class="th-name">Name</th>
+                            <th class="th-username">Email</th>
+                            <th class="th-role">User Role</th>
+                            <th class="th-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let user of users; let i = index; trackBy: trackByUserId"
+                            [class.updating]="updatingUserId === user.id">
+                            <td class="td-number">{{ i + 1 }}</td>
+                            <td class="td-name">
+                                <span>{{ user.name }}</span>
+                            </td>
+                            <td class="td-username">{{ user.email }}</td>
+                            <td class="td-role">
+                                <span class="role-badge">
+                                    {{ user.isBlocked ? 'Blocked' : (user.isAdmin ? 'Administrator' : 'User') }}
+                                </span>
+                            </td>
+                            <td class="td-actions">
+                                <div class="action-menu-container">
+                                    <button class="menu-button" (click)="toggleMenu(user.id, $event)"
+                                        aria-label="User actions menu" title="User actions">
+                                        <span class="dot"></span>
+                                        <span class="dot"></span>
+                                        <span class="dot"></span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div *ngIf="users.length === 0" class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 0 24 24" width="64">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <p>No users found</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="dashboard-footer">
+            <div class="footer-meta">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="16">
+                    <path
+                        d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                    <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                </svg>
+                <span>Last updated: {{ currentDate | date:'short' }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dropdown menu portal (outside table) -->
+<div class="dropdown-menu-portal" *ngIf="openMenuUserId" [style.top.px]="menuPosition.top"
+    [style.right.px]="menuPosition.right">
+    <ng-container *ngFor="let user of users">
+        <div class="dropdown-menu" *ngIf="openMenuUserId === user.id">
+            <ng-container *ngIf="user.isBlocked">
+                <button class="menu-item" (click)="reinstateUser(user)">Reinstate {{
+                    user.wasAdmin ? 'Administrator' : 'User' }}</button>
+            </ng-container>
+            <ng-container *ngIf="!user.isBlocked">
+                <button class="menu-item" *ngIf="!user.isAdmin" (click)="grantAdminPrivilege(user)">Grant Admin
+                    Privileges</button>
+                <button class="menu-item" *ngIf="user.isAdmin" (click)="revokeAdminPrivilege(user)">Revoke Admin
+                    Privileges</button>
+                <button class="menu-item" (click)="blockUser(user)">Block {{ user.isAdmin ?
+                    'Administrator' : 'User' }}</button>
+                <button class="menu-item delete" (click)="deleteUser(user)">Delete {{
+                    user.isAdmin ? 'Administrator' : 'User' }}</button>
+            </ng-container>
+        </div>
+    </ng-container>
+</div>

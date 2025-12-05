@@ -1,0 +1,877 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MealPlan, MealPreferences, SavedMealPlan, DAYS_OF_WEEK, MEAL_TYPES } from '../../models/meal-plan.model';
+import { MealPlanService } from '../../services/meal-plan.service';
+import { AuthService } from '../../services/auth.service';
+import { UserRecipeService } from '../../services/user-recipe.service';
+import { RecipeService } from '../../services/recipe.service';
+import { MealCardComponent } from '../../components/meal-card/meal-card.component';
+import { MealPlanDialogComponent } from '../../components/meal-plan-dialog/meal-plan-dialog.component';
+import { PreferencesDialogComponent } from '../../components/preferences-dialog/preferences-dialog.component';
+import { SaveMealPlanDialogComponent } from '../../components/save-meal-plan-dialog/save-meal-plan-dialog.component';
+import { LoadMealPlanDialogComponent } from '../../components/load-meal-plan-dialog/load-meal-plan-dialog.component';
+import { environment } from '../../../environments/environment';
+
+@Component({
+    selector: 'app-meal-planner',
+    standalone: true,
+    imports: [CommonModule, FormsModule, MealCardComponent, MealPlanDialogComponent, PreferencesDialogComponent, SaveMealPlanDialogComponent, LoadMealPlanDialogComponent],
+    templateUrl: './meal-planner.component.html',
+    styleUrls: ['./meal-planner.component.scss']
+})
+export class MealPlannerComponent implements OnInit {
+    DAYS_OF_WEEK = DAYS_OF_WEEK;
+    MEAL_TYPES = MEAL_TYPES;
+
+    user: any = null;
+    isAdminView = false;
+
+    // Mode: 'create' | 'view' | 'edit'
+    mode: 'create' | 'view' | 'edit' = 'create';
+    loadedPlanId: string | null = null;
+    loadedPlanName: string = '';
+
+    mealPlans: MealPlan[] = [];
+    allMealPlans: MealPlan[] = [];
+    myRecipes: any[] = [];
+    externalRecipes: any[] = [];
+    favorites: any[] = [];
+
+    // State flags
+    loading = true;
+    autoPlanning = false;
+    weeklyNotes: string = '';
+    notesLoading = false;
+    showWeeklyNotes = false;  // Initially hidden, user can toggle
+    hasSnacks = false;  // Track if meal plan includes snacks
+
+    // Dialogs
+    showDialog = false;
+    showDeleteDialog = false;
+    showPreferencesDialog = false;
+    showSavePlanDialog = false;
+    showLoadPlanDialog = false;
+    dialogOpen = false;
+    preferencesDialogOpen = false;
+    deleteDialogOpen = false;
+    savePlanDialogOpen = false;
+    loadPlanDialogOpen = false;
+
+    // Dialog data
+    dialogDay = '';
+    dialogMealType = '';
+    editingPlan: MealPlan | null = null;
+    selectedPlan: MealPlan | null = null;
+
+    // Preferences
+    mealPreferences: MealPreferences = {
+        isVegetarian: false,
+        isWeightLoss: false,
+        allergies: []
+    };
+
+    // Admin
+    allUsers: any[] = [];
+    selectedUserId = 'all';
+
+    // Saved meal plans
+    savedMealPlans: SavedMealPlan[] = [];
+
+    // Alert
+    alert: { type: 'success' | 'error', message: string } | null = null;
+
+    constructor(
+        private mealPlanService: MealPlanService,
+        private authService: AuthService,
+        private userRecipeService: UserRecipeService,
+        private recipeService: RecipeService,
+        private http: HttpClient,
+        private router: Router,
+        private route: ActivatedRoute,
+        private cdr: ChangeDetectorRef,
+        private location: Location
+    ) { }
+
+    async ngOnInit() {
+        this.authService.user$.subscribe(async user => {
+            this.user = user;
+            if (user) {
+                // Check query params for mode and planId
+                this.route.queryParams.subscribe(async params => {
+                    this.isAdminView = params['admin'] === 'true' && this.user?.isAdmin;
+                    this.mode = params['mode'] || 'create';
+                    this.loadedPlanId = params['planId'] || null;
+
+                    // Debug logging
+                    console.log('=== MEAL PLANNER MODE DEBUG ===');
+                    console.log('Mode:', this.mode);
+                    console.log('Is Admin View:', this.isAdminView);
+                    console.log('Loaded Plan ID:', this.loadedPlanId);
+                    console.log('Should show notes:', !this.isAdminView && (this.mode === 'create' || this.mode === 'update' || this.mode === 'edit'));
+                    console.log('================================');
+
+                    if (this.loadedPlanId && (this.mode === 'view' || this.mode === 'edit')) {
+                        // Load saved plan for view/edit mode
+                        await this.loadSavedPlan(this.loadedPlanId);
+                    } else if (this.mode === 'create') {
+                        // Show empty grid for create mode but load recipes and favorites for auto-generation
+                        await this.loadRecipes();
+
+                        // Load favorites for auto-generation
+                        const favoritesData = await this.http.get<any[]>(
+                            `${environment.jsonServerUrl}/favorites`,
+                            { params: { userId: this.user.id } }
+                        ).toPromise();
+                        this.favorites = favoritesData || [];
+
+                        this.loading = false;
+                        this.cdr.detectChanges();
+                    } else {
+                        // Load existing data for other modes
+                        await this.loadData();
+                    }
+                });
+            }
+        });
+    }
+
+    async loadData() {
+        this.loading = true;
+        try {
+            if (this.isAdminView && this.user?.isAdmin) {
+                await this.loadAdminData();
+            } else {
+                await this.loadUserData();
+            }
+        } catch (error) {
+            console.error('Failed to load data:', error);
+            this.showAlert('error', 'Failed to load meal planner data');
+        } finally {
+            this.loading = false;
+            this.cdr.detectChanges();
+        }
+    }
+
+    async loadAdminData() {
+        const [usersData, favoritesData] = await Promise.all([
+            this.mealPlanService.getAllUsers(),
+            this.http.get<any[]>(`${environment.jsonServerUrl}/favorites`).toPromise()
+        ]);
+
+        this.allUsers = usersData || [];
+
+        const allPlansPromises = this.allUsers.map(u => this.mealPlanService.getMealPlans(u.id));
+        const allPlansResults = await Promise.all(allPlansPromises);
+        this.allMealPlans = allPlansResults.flat().map((plan: MealPlan) => ({
+            ...plan,
+            userName: this.allUsers.find(u => u.id === plan.userId)?.name || 'Unknown'
+        }));
+
+        if (this.selectedUserId === 'all') {
+            this.mealPlans = this.allMealPlans;
+        } else {
+            this.mealPlans = this.allMealPlans.filter(p => p.userId === this.selectedUserId);
+        }
+
+        await this.loadRecipes();
+    }
+
+    async loadSavedPlan(planId: string) {
+        this.loading = true;
+        try {
+            const savedPlan = await this.mealPlanService.loadSavedMealPlan(planId);
+            this.loadedPlanName = savedPlan.name;
+
+            // Load notes specific to this saved plan
+            this.weeklyNotes = savedPlan.notes || '';
+
+            // Load recipes first to enrich meal data
+            await this.loadRecipes();
+
+            // Load other data
+            const [notesData, externalRecipesData] = await Promise.all([
+                this.mealPlanService.getWeeklyNotes(this.user.id),
+                this.http.get<any[]>(`${environment.jsonServerUrl}/externalRecipes`).toPromise()
+            ]);
+
+            this.weeklyNotes = notesData?.notes || '';
+            this.externalRecipes = externalRecipesData || [];
+
+            // Load favorites
+            const favoritesData = await this.http.get<any[]>(
+                `${environment.jsonServerUrl}/favorites`,
+                { params: { userId: this.user.id } }
+            ).toPromise();
+            this.favorites = favoritesData || [];
+
+            // Get all available recipes to enrich saved meal data
+            const allRecipes = this.getAllAvailableRecipes();
+
+            // Create meal plans from saved plan meals, enriching with recipe data
+            const createPromises = savedPlan.meals.map(meal => {
+                // Find the original recipe to get images and ingredients
+                const originalRecipe = allRecipes.find(r =>
+                    r.title === meal.recipeTitle ||
+                    r.id === meal.recipeId ||
+                    r.spoonacularId === meal.recipeId
+                );
+
+                // Enrich meal data with recipe images and ingredients
+                const enrichedMeal = {
+                    ...meal,
+                    recipeImage: meal.recipeImage || originalRecipe?.image || '',
+                    ingredients: meal.ingredients || originalRecipe?.ingredients ||
+                        originalRecipe?.extendedIngredients?.map((ing: any) => ing.name || ing.original) || [],
+                    userId: this.user.id
+                };
+
+                return this.mealPlanService.createMealPlan(enrichedMeal);
+            });
+
+            const createdPlans = await Promise.all(createPromises);
+            this.mealPlans = createdPlans;
+
+            // Load saved meal plans
+            this.savedMealPlans = await this.mealPlanService.getSavedMealPlans(this.user.id);
+        } catch (error) {
+            console.error('Failed to load saved plan:', error);
+            this.showAlert('error', 'Failed to load meal plan');
+        } finally {
+            this.loading = false;
+            this.cdr.detectChanges();
+        }
+    }
+
+    async loadUserData() {
+        const [plansData, recipesData, notesData, externalRecipesData] = await Promise.all([
+            this.mealPlanService.getMealPlans(this.user.id),
+            this.http.get<any[]>(`${environment.jsonServerUrl}/myRecipes`, { params: { userId: this.user.id } }).toPromise(),
+            this.mealPlanService.getWeeklyNotes(this.user.id),
+            this.http.get<any[]>(`${environment.jsonServerUrl}/externalRecipes`).toPromise()
+        ]);
+
+        this.mealPlans = plansData || [];
+        this.myRecipes = recipesData || [];
+        this.weeklyNotes = notesData?.notes || '';
+        this.externalRecipes = externalRecipesData || [];
+
+        // Load favorites
+        const favoritesData = await this.http.get<any[]>(
+            `${environment.jsonServerUrl}/favorites`,
+            { params: { userId: this.user.id } }
+        ).toPromise();
+        this.favorites = favoritesData || [];
+
+        // Load saved meal plans
+        this.savedMealPlans = await this.mealPlanService.getSavedMealPlans(this.user.id);
+    }
+
+    async loadRecipes() {
+        const [recipesData, externalRecipesData] = await Promise.all([
+            this.http.get<any[]>(`${environment.jsonServerUrl}/myRecipes`, { params: { userId: this.user.id } }).toPromise(),
+            this.http.get<any[]>(`${environment.jsonServerUrl}/externalRecipes`).toPromise()
+        ]);
+
+        this.myRecipes = recipesData || [];
+        this.externalRecipes = externalRecipesData || [];
+    }
+
+    getMealForSlot(day: string, mealType: string): MealPlan | null {
+        return this.mealPlans.find(m => m.day === day && m.mealType === mealType) || null;
+    }
+
+    getAllAvailableRecipes(): any[] {
+        const allRecipes: any[] = [];
+
+        // Add my recipes
+        this.myRecipes.forEach(recipe => {
+            allRecipes.push({
+                ...recipe,
+                source: 'myRecipes'
+            });
+        });
+
+        // Add external recipes
+        this.externalRecipes.forEach(recipe => {
+            allRecipes.push({
+                ...recipe,
+                id: recipe.spoonacularId || recipe.id,
+                source: 'externalRecipes'
+            });
+        });
+
+        // Add favorites (using correct field names)
+        this.favorites.forEach(fav => {
+            const existingRecipe = allRecipes.find(r =>
+                (r.id === fav.recipeId || r.spoonacularId === fav.recipeId)
+            );
+            if (!existingRecipe) {
+                allRecipes.push({
+                    id: fav.recipeId,
+                    spoonacularId: fav.recipeId,
+                    title: fav.title || fav.recipeTitle,  // Handle both field names
+                    image: fav.image || fav.recipeImage,  // Handle both field names
+                    ingredients: [],  // Favorites might not have ingredients
+                    source: 'favorites'
+                });
+            }
+        });
+
+        return allRecipes;
+    }
+
+    // Dialog handlers
+    openAddDialog(day: string, mealType: string) {
+        this.dialogDay = day;
+        this.dialogMealType = mealType;
+        this.editingPlan = null;
+        this.dialogOpen = true;
+    }
+
+    openEditDialog(meal: MealPlan) {
+        this.dialogDay = meal.day;
+        this.dialogMealType = meal.mealType;
+        this.editingPlan = meal;
+        this.dialogOpen = true;
+    }
+
+    closeDialog() {
+        this.dialogOpen = false;
+        this.editingPlan = null;
+    }
+
+    async handleSaveMeal(mealPlan: Partial<MealPlan>) {
+        try {
+            if (this.editingPlan) {
+                // Update existing meal
+                const updated = await this.mealPlanService.updateMealPlan(this.editingPlan.id, {
+                    ...this.editingPlan,
+                    ...mealPlan
+                });
+
+                // Update the meal in the array directly
+                const index = this.mealPlans.findIndex(p => p.id === this.editingPlan!.id);
+                if (index !== -1) {
+                    this.mealPlans[index] = updated;
+                }
+
+                this.showAlert('success', 'Meal updated successfully');
+            } else {
+                // Add new meal
+                const created = await this.mealPlanService.createMealPlan({
+                    ...mealPlan,
+                    userId: this.isAdminView ? this.selectedUserId : this.user.id
+                });
+
+                // Add the new meal to the array directly
+                this.mealPlans.push(created);
+
+                this.showAlert('success', 'Meal added successfully');
+            }
+
+            this.closeDialog();
+            this.cdr.detectChanges();
+        } catch (error) {
+            console.error('Failed to save meal:', error);
+            this.showAlert('error', 'Failed to save meal');
+        }
+    }
+
+    openDeleteDialog(meal: MealPlan) {
+        this.selectedPlan = meal;
+        this.deleteDialogOpen = true;
+    }
+
+    closeDeleteDialog() {
+        this.deleteDialogOpen = false;
+        this.selectedPlan = null;
+    }
+
+    async confirmDelete() {
+        if (!this.selectedPlan) return;
+
+        try {
+            await this.mealPlanService.deleteMealPlan(this.selectedPlan.id);
+
+            // Remove the meal from the array directly (shows empty slot)
+            this.mealPlans = this.mealPlans.filter(plan => plan.id !== this.selectedPlan!.id);
+
+            this.showAlert('success', 'Meal deleted successfully');
+            this.closeDeleteDialog();
+            this.cdr.detectChanges();
+        } catch (error) {
+            console.error('Failed to delete meal:', error);
+            this.showAlert('error', 'Failed to delete meal');
+        }
+    }
+
+    // Auto-generation
+    openPreferencesDialog() {
+        this.preferencesDialogOpen = true;
+    }
+
+    closePreferencesDialog() {
+        this.preferencesDialogOpen = false;
+    }
+
+    async handleGenerateMealPlan(preferences: MealPreferences) {
+        this.autoPlanning = true;
+        this.closePreferencesDialog();
+
+        // Set hasSnacks flag based on preferences
+        this.hasSnacks = preferences.includeSnacks || false;
+
+        try {
+            // Fetch all previously saved meal plans to avoid repetition (optional - won't fail if empty)
+            let previouslyUsedRecipes = new Set<string>();
+
+            try {
+                const savedPlans = await this.mealPlanService.getSavedMealPlans(this.user.id);
+
+                // Extract recipe titles from all previous meal plans
+                if (savedPlans && savedPlans.length > 0) {
+                    savedPlans.forEach(plan => {
+                        plan.meals.forEach(meal => {
+                            if (meal.recipeTitle) {
+                                previouslyUsedRecipes.add(meal.recipeTitle);
+                            }
+                        });
+                    });
+                    console.log('Avoiding recipes from previous plans:', Array.from(previouslyUsedRecipes));
+                }
+            } catch (error) {
+                console.log('No previous meal plans found, will use all recipes');
+            }
+
+            const availableRecipes = this.getAllAvailableRecipes();
+
+            if (availableRecipes.length === 0) {
+                this.showAlert('error', 'No recipes available. Please add some recipes first!');
+                this.autoPlanning = false;
+                return;
+            }
+
+            console.log('Generating meal plan with', availableRecipes.length, 'available recipes');
+
+            const generatedPlans = this.mealPlanService.generateMealPlan(
+                preferences || { isVegetarian: false, isWeightLoss: false, allergies: [], includeSnacks: false },
+                availableRecipes,
+                previouslyUsedRecipes
+            );
+
+            if (generatedPlans.length === 0) {
+                this.showAlert('error', 'Could not generate meal plan with current preferences. Try relaxing your filters.');
+                this.autoPlanning = false;
+                return;
+            }
+
+            console.log('Generated', generatedPlans.length, 'meal plans with images and ingredients');
+
+            // Delete existing meal plans
+            const deletePromises = this.mealPlans.map(plan =>
+                this.mealPlanService.deleteMealPlan(plan.id)
+            );
+            await Promise.all(deletePromises);
+
+            // Create new meal plans
+            const createPromises = generatedPlans.map(plan =>
+                this.mealPlanService.createMealPlan({
+                    ...plan,
+                    userId: this.isAdminView ? this.selectedUserId : this.user.id
+                })
+            );
+            const createdPlans = await Promise.all(createPromises);
+
+            // Directly set the meal plans instead of reloading from DB to preserve images
+            this.mealPlans = createdPlans;
+
+            this.showAlert('success', 'Meal plan generated successfully with new recipes!');
+            this.cdr.detectChanges();
+        } catch (error) {
+            console.error('Failed to generate meal plan:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            this.showAlert('error', 'Failed to generate meal plan: ' + errorMessage);
+        } finally {
+            this.autoPlanning = false;
+            this.cdr.detectChanges();
+        }
+    }
+
+    async saveNotes() {
+        this.notesLoading = true;
+        try {
+            await this.mealPlanService.saveWeeklyNotes(this.user.id, this.weeklyNotes);
+            this.showAlert('success', 'Notes saved successfully');
+        } catch (error) {
+            console.error('Failed to save notes:', error);
+            this.showAlert('error', 'Failed to save notes');
+        } finally {
+            this.notesLoading = false;
+        }
+    }
+
+    // Admin functions
+    async handleUserChange(event: any) {
+        this.selectedUserId = event.target?.value;
+        if (this.selectedUserId === 'all') {
+            await this.loadData();
+        } else {
+            this.mealPlans = this.allMealPlans.filter(p => p.userId === this.selectedUserId);
+        }
+    }
+
+    getSelectedUserName(): string {
+        if (this.selectedUserId === 'all') return 'All Users';
+        return this.allUsers.find(u => u.id === this.selectedUserId)?.name || 'Unknown User';
+    }
+
+    // Save/Load plan dialogs
+    openSavePlanDialog() {
+        this.showSavePlanDialog = true;
+        this.savePlanDialogOpen = true;
+    }
+
+    closeSavePlanDialog() {
+        this.showSavePlanDialog = false;
+        this.savePlanDialogOpen = false;
+    }
+
+    async handleSavePlan(data: { name: string, description: string }) {
+        try {
+            await this.mealPlanService.saveMealPlan(
+                this.user.id,
+                data.name,
+                data.description,
+                this.mealPlans,
+                this.weeklyNotes  // Include notes when saving
+            );
+            this.showAlert('success', `Meal plan "${data.name}" saved successfully!`);
+            this.savedMealPlans = await this.mealPlanService.getSavedMealPlans(this.user.id);
+            this.closeSavePlanDialog();
+
+            // Clear the current meal plan after saving
+            const deletePromises = this.mealPlans.map(plan =>
+                this.mealPlanService.deleteMealPlan(plan.id)
+            );
+            await Promise.all(deletePromises);
+
+            // Navigate back to landing page
+            this.router.navigate(['/meal-planner']);
+        } catch (error) {
+            console.error('Failed to save meal plan:', error);
+            this.showAlert('error', 'Failed to save meal plan');
+        }
+    }
+
+    async updatePlan() {
+        if (!this.loadedPlanId || !this.loadedPlanName) return;
+
+        try {
+            // Get the original saved plan to find its ID in savedMealPlans
+            const originalPlan = this.savedMealPlans.find(p => p.id === this.loadedPlanId);
+
+            if (originalPlan) {
+                // Update the existing plan
+                await this.mealPlanService.updateSavedMealPlan(this.loadedPlanId, {
+                    ...originalPlan,
+                    meals: this.mealPlans,
+                    updatedAt: new Date().toISOString()
+                });
+                this.showAlert('success', 'Meal plan updated successfully!');
+            }
+
+            // Navigate back
+            this.router.navigate(['/meal-planner']);
+        } catch (error) {
+            console.error('Failed to update meal plan:', error);
+            this.showAlert('error', 'Failed to update meal plan');
+        }
+    }
+
+    goBackToLanding() {
+        // Use browser history to go back to the previous page
+        this.location.back();
+    }
+
+    openLoadPlanDialog() {
+        this.showLoadPlanDialog = true;
+        this.loadPlanDialogOpen = true;
+    }
+
+    closeLoadPlanDialog() {
+        this.showLoadPlanDialog = false;
+        this.loadPlanDialogOpen = false;
+    }
+
+    async handleLoadPlan(savedPlan: SavedMealPlan) {
+        try {
+            // Delete current meal plans
+            const deletePromises = this.mealPlans.map(plan =>
+                this.mealPlanService.deleteMealPlan(plan.id)
+            );
+            await Promise.all(deletePromises);
+
+            // Create new plans from saved plan
+            const createPromises = savedPlan.meals.map(meal =>
+                this.mealPlanService.createMealPlan({
+                    ...meal,
+                    userId: this.user.id
+                })
+            );
+            await Promise.all(createPromises);
+
+            await this.loadData();
+            this.closeLoadPlanDialog();
+        } catch (error) {
+            console.error('Failed to load meal plan:', error);
+            this.showAlert('error', 'Failed to load meal plan');
+        }
+    }
+
+    async handleDeleteSavedPlan(savedPlan: SavedMealPlan) {
+        try {
+            await this.mealPlanService.deleteSavedMealPlan(savedPlan.id);
+            this.showAlert('success', `Meal plan "${savedPlan.name}" deleted successfully!`);
+            this.savedMealPlans = await this.mealPlanService.getSavedMealPlans(this.user.id);
+        } catch (error) {
+            console.error('Failed to delete saved meal plan:', error);
+            this.showAlert('error', 'Failed to delete saved meal plan');
+        }
+    }
+
+    showAlert(type: 'success' | 'error', message: string) {
+        this.alert = { type, message };
+        setTimeout(() => {
+            this.alert = null;
+        }, 3000);
+    }
+});
+    });
+console.log('Avoiding recipes from previous plans:', Array.from(previouslyUsedRecipes));
+}
+} catch (error) {
+    console.log('No previous meal plans found, will use all recipes');
+}
+
+const availableRecipes = this.getAllAvailableRecipes();
+
+if (availableRecipes.length === 0) {
+    this.showAlert('error', 'No recipes available. Please add some recipes first!');
+    this.autoPlanning = false;
+    return;
+}
+
+console.log('Generating meal plan with', availableRecipes.length, 'available recipes');
+
+const generatedPlans = this.mealPlanService.generateMealPlan(
+    preferences || { isVegetarian: false, isWeightLoss: false, allergies: [], includeSnacks: false },
+    availableRecipes,
+    previouslyUsedRecipes
+);
+
+if (generatedPlans.length === 0) {
+    this.showAlert('error', 'Could not generate meal plan with current preferences. Try relaxing your filters.');
+    this.autoPlanning = false;
+    return;
+}
+
+console.log('Generated', generatedPlans.length, 'meal plans with images and ingredients');
+
+// Delete existing meal plans
+const deletePromises = this.mealPlans.map(plan =>
+    this.mealPlanService.deleteMealPlan(plan.id)
+);
+await Promise.all(deletePromises);
+
+// Create new meal plans
+const createPromises = generatedPlans.map(plan =>
+    this.mealPlanService.createMealPlan({
+        ...plan,
+        userId: this.isAdminView ? this.selectedUserId : this.user.id
+    })
+);
+const createdPlans = await Promise.all(createPromises);
+
+// Directly set the meal plans instead of reloading from DB to preserve images
+this.mealPlans = createdPlans;
+
+this.showAlert('success', 'Meal plan generated successfully with new recipes!');
+this.cdr.detectChanges();
+        } catch (error) {
+    console.error('Failed to generate meal plan:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    this.showAlert('error', 'Failed to generate meal plan: ' + errorMessage);
+} finally {
+    this.autoPlanning = false;
+    this.cdr.detectChanges();
+}
+    }
+
+    // Weekly notes
+    async saveNotes() {
+    this.notesLoading = true;
+    try {
+        await this.mealPlanService.saveWeeklyNotes(this.user.id, this.weeklyNotes);
+        this.showAlert('success', 'Notes saved successfully');
+    } catch (error) {
+        console.error('Failed to save notes:', error);
+        this.showAlert('error', 'Failed to save notes');
+    } finally {
+        this.notesLoading = false;
+        this.cdr.detectChanges();
+    }
+}
+
+    // Admin
+    async handleUserChange(event: any) {
+    this.selectedUserId = event.target.value;
+    if (this.selectedUserId === 'all') {
+        this.mealPlans = this.allMealPlans;
+    } else {
+        this.mealPlans = this.allMealPlans.filter(p => p.userId === this.selectedUserId);
+    }
+    this.cdr.detectChanges();
+}
+
+getSelectedUserName(): string {
+    if (this.selectedUserId === 'all') return 'All Users';
+    const selectedUser = this.allUsers.find(u => u.id === this.selectedUserId);
+    return selectedUser?.name || 'Unknown User';
+}
+
+// Saved meal plans
+openSavePlanDialog() {
+    if (this.mealPlans.length === 0) {
+        this.showAlert('error', 'No meals to save. Add some meals first!');
+        return;
+    }
+    this.savePlanDialogOpen = true;
+}
+
+closeSavePlanDialog() {
+    this.savePlanDialogOpen = false;
+}
+
+    async handleSavePlan(data: { name: string, description: string }) {
+    try {
+        await this.mealPlanService.saveMealPlan(
+            this.user.id,
+            data.name,
+            data.description,
+            this.mealPlans,
+            this.weeklyNotes  // Include notes when saving
+        );
+        this.showAlert('success', `Meal plan "${data.name}" saved successfully!`);
+        this.savedMealPlans = await this.mealPlanService.getSavedMealPlans(this.user.id);
+        this.closeSavePlanDialog();
+
+        // Clear the current meal plan after saving
+        const deletePromises = this.mealPlans.map(plan =>
+            this.mealPlanService.deleteMealPlan(plan.id)
+        );
+        await Promise.all(deletePromises);
+
+        // Navigate back to landing page
+        this.router.navigate(['/meal-planner']);
+    } catch (error) {
+        console.error('Failed to save meal plan:', error);
+        this.showAlert('error', 'Failed to save meal plan');
+    }
+}
+
+    async updatePlan() {
+    if (!this.loadedPlanId || this.mode !== 'edit') return;
+
+    try {
+        // Update the saved plan with current meals
+        const savedPlan = await this.mealPlanService.loadSavedMealPlan(this.loadedPlanId);
+
+        // Delete the old saved plan
+        await this.mealPlanService.deleteSavedMealPlan(this.loadedPlanId);
+
+        // Save the updated plan with the same name
+        await this.mealPlanService.saveMealPlan(
+            this.user.id,
+            savedPlan.name,
+            savedPlan.description || '',
+            this.mealPlans
+        );
+
+        this.showAlert('success', `Updated "${savedPlan.name}" successfully!`);
+
+        // Clear the temporary meal plans
+        const deletePromises = this.mealPlans.map(plan =>
+            this.mealPlanService.deleteMealPlan(plan.id)
+        );
+        await Promise.all(deletePromises);
+
+        // Navigate back to landing page
+        this.router.navigate(['/meal-planner']);
+    } catch (error) {
+        console.error('Failed to update meal plan:', error);
+        this.showAlert('error', 'Failed to update meal plan');
+    }
+}
+
+goBackToLanding() {
+    // Use browser history to go back to the previous page
+    this.location.back();
+}
+
+openLoadPlanDialog() {
+    this.loadPlanDialogOpen = true;
+}
+
+closeLoadPlanDialog() {
+    this.loadPlanDialogOpen = false;
+}
+
+    async handleLoadPlan(savedPlan: SavedMealPlan) {
+    try {
+        // Delete existing meal plans
+        const deletePromises = this.mealPlans.map(plan =>
+            this.mealPlanService.deleteMealPlan(plan.id)
+        );
+        await Promise.all(deletePromises);
+
+        // Create new meal plans from saved plan
+        const createPromises = savedPlan.meals.map(meal =>
+            this.mealPlanService.createMealPlan({
+                ...meal,
+                userId: this.user.id
+            })
+        );
+        await Promise.all(createPromises);
+
+        this.showAlert('success', `Loaded meal plan "${savedPlan.name}"`);
+        await this.loadData();
+        this.closeLoadPlanDialog();
+    } catch (error) {
+        console.error('Failed to load meal plan:', error);
+        this.showAlert('error', 'Failed to load meal plan');
+    }
+}
+
+    async handleDeleteSavedPlan(savedPlan: SavedMealPlan) {
+    try {
+        await this.mealPlanService.deleteSavedMealPlan(savedPlan.id);
+        this.showAlert('success', `Deleted saved plan "${savedPlan.name}"`);
+        this.savedMealPlans = await this.mealPlanService.getSavedMealPlans(this.user.id);
+    } catch (error) {
+        console.error('Failed to delete saved plan:', error);
+        this.showAlert('error', 'Failed to delete saved plan');
+    }
+}
+
+// Alert
+showAlert(type: 'success' | 'error', message: string) {
+    this.alert = { type, message };
+    setTimeout(() => {
+        this.alert = null;
+        this.cdr.detectChanges();
+    }, 3000);
+}
+}

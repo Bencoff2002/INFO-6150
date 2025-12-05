@@ -1,0 +1,293 @@
+.reports-landing-container {
+    min-height: calc(100vh - 60px);
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    padding: 2.5rem 2rem;
+}
+
+.landing-header {
+    max-width: 1200px;
+    margin: 0 auto 3rem;
+    position: relative;
+
+    .back-button {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.65rem 1.25rem;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        color: #2c3e50;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+        &:hover {
+            background: #f8f9fa;
+            border-color: #c0c0c0;
+            transform: translateX(-2px);
+        }
+
+        svg {
+            flex-shrink: 0;
+        }
+    }
+
+    .header-content {
+        text-align: center;
+        padding: 0 120px;
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin: 0 0 0.5rem 0;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin: 0 0 1rem 0;
+        }
+
+        .report-metadata {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+
+            .metadata-item {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                font-size: 0.875rem;
+                color: #64748b;
+
+                svg {
+                    opacity: 0.7;
+                }
+            }
+        }
+    }
+}
+
+.reports-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 2rem;
+}
+
+.report-option-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+
+    &:nth-child(2)::before {
+        background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
+    }
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+        border-color: #d1d5db;
+
+        &::before {
+            transform: scaleX(1);
+        }
+
+        .card-icon {
+            transform: scale(1.05);
+        }
+
+        .card-arrow {
+            transform: translateX(8px);
+        }
+    }
+
+    .card-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease;
+
+        svg {
+            fill: white;
+        }
+
+        &.favorites {
+            background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+        }
+
+        &.ratings {
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        }
+    }
+
+    .card-content {
+        flex: 1;
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin: 0 0 0.75rem 0;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0 0 1.25rem 0;
+        }
+
+        .card-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+
+            .feature-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 1rem;
+                background: #f1f5f9;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                color: #475569;
+                font-weight: 500;
+
+                svg {
+                    fill: #10b981;
+                    flex-shrink: 0;
+                }
+            }
+        }
+    }
+
+    .card-arrow {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+
+        svg {
+            fill: #64748b;
+        }
+    }
+}
+
+@media (max-width: 1024px) {
+    .landing-header .header-content {
+        padding: 0 100px;
+
+        h1 {
+            font-size: 2.25rem;
+        }
+    }
+
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .reports-landing-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .landing-header {
+        margin-bottom: 2rem;
+
+        .back-button {
+            position: static;
+            margin-bottom: 1rem;
+            width: fit-content;
+        }
+
+        .header-content {
+            padding: 0;
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .header-subtitle {
+                font-size: 1rem;
+            }
+
+            .report-metadata {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    }
+
+    .reports-grid {
+        gap: 1.5rem;
+        grid-template-columns: 1fr;
+    }
+
+    .report-option-card {
+        padding: 2rem 1.5rem;
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+        }
+
+        .card-content h2 {
+            font-size: 1.5rem;
+        }
+
+        .card-arrow {
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+
+            svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+}

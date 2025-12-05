@@ -44,3 +44,11 @@ Thumbs.db
 
 # React migration source
 react-recipes/
+
+
+# Environment files
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
+.env
+.env.local
+.env.*.local

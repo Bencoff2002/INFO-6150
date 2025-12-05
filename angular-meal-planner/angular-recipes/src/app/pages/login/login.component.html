@@ -1,0 +1,70 @@
+<div class="login-container">
+    <div class="login-paper">
+        <!-- Back Arrow -->
+        <button *ngIf="showBackArrow" class="back-button" (click)="handleBackClick()"
+            aria-label="back to previous page">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+        </button>
+
+        <h1 [class.title-padded]="showBackArrow">{{ isLogin ? 'Login' : 'Register' }}</h1>
+
+        <div *ngIf="error" class="alert alert-error">
+            {{ error }}
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="handleSubmit()">
+            <ng-container *ngIf="!isLogin">
+                <div class="form-field">
+                    <input type="text" formControlName="name" placeholder="Name" required>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Dietary Preferences (Optional)</label>
+                    <div class="preferences-container">
+                        <button type="button" *ngFor="let pref of preferenceOptions" class="chip"
+                            [class.selected]="isPreferenceSelected(pref.value)"
+                            (click)="handlePreferenceToggle(pref.value)">
+                            {{ pref.label }}
+                        </button>
+                    </div>
+                </div>
+            </ng-container>
+
+            <div class="form-field">
+                <input type="email" formControlName="email" placeholder="Email" required>
+            </div>
+
+            <div class="form-field">
+                <input type="password" formControlName="password" placeholder="Password" required>
+            </div>
+
+            <button type="submit" class="submit-button" [disabled]="loading || isLocked">
+                {{ isLocked ? 'Locked (' + formatTime(remainingTime) + ')' : (isLogin ? 'Login' : 'Register') }}
+            </button>
+
+            <button type="button" class="toggle-button" (click)="toggleMode()" [disabled]="isLocked">
+                {{ isLogin ? "Don't have an account? Register" : 'Already have an account? Login' }}
+            </button>
+        </form>
+    </div>
+
+    <!-- Password Change Prompt Dialog -->
+    <div *ngIf="showPasswordChangePrompt" class="dialog-overlay">
+        <div class="dialog-paper">
+            <h2 class="dialog-title">Change Password Recommended</h2>
+            <div class="dialog-content">
+                <p class="dialog-content-text">
+                    Your account was temporarily locked due to multiple failed login attempts.
+                    For security reasons, we recommend changing your password. Would you like to change it now?
+                </p>
+            </div>
+            <div class="dialog-actions">
+                <button class="dialog-button" (click)="handlePasswordChangeNo()">No, Thanks</button>
+                <button class="dialog-button primary" (click)="handlePasswordChangeYes()">Yes, Change Password</button>
+            </div>
+        </div>
+    </div>
+</div>

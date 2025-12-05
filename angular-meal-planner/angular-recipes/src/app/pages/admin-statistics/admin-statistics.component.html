@@ -1,0 +1,204 @@
+<div class="statistics-dashboard">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+        <button class="back-button" (click)="goBack()" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+            Back
+        </button>
+        <div class="header-content">
+            <h1>Analytics Dashboard</h1>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+        <div class="loader"></div>
+        <p>Loading dashboard...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-state">
+        <svg xmlns="http://www.w3.org/2000/svg" height="56" viewBox="0 0 24 24" width="56">
+            <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
+        <h3>Unable to Load Data</h3>
+        <p>{{error}}</p>
+        <button class="retry-button" (click)="loadAllStatistics()">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 24 24" width="18">
+                <path
+                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+            </svg>
+            Retry
+        </button>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!loading && !error" class="dashboard-content">
+
+        <!-- All Statistics Cards in Unified Grid -->
+        <div class="metrics-grid">
+            <!-- Total Users Card -->
+            <div class="metric-card primary">
+                <div class="metric-header">
+                    <span class="metric-label">Total Users</span>
+                    <div class="metric-icon users-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path
+                                d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalUsers}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">Registered accounts</span>
+                </div>
+            </div>
+
+            <!-- Favorites Card -->
+            <div class="metric-card secondary">
+                <div class="metric-header">
+                    <span class="metric-label">Favorites</span>
+                    <div class="metric-icon favorites-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path
+                                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalFavorites}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">Saved by users</span>
+                </div>
+            </div>
+
+            <!-- Meal Plans Card -->
+            <div class="metric-card success">
+                <div class="metric-header">
+                    <span class="metric-label">Meal Plans</span>
+                    <div class="metric-icon plans-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path
+                                d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalMealPlans}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">Created by users</span>
+                </div>
+            </div>
+
+            <!-- Ratings Card -->
+            <div class="metric-card warning">
+                <div class="metric-header">
+                    <span class="metric-label">Ratings</span>
+                    <div class="metric-icon ratings-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path
+                                d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalRatings}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">User reviews</span>
+                </div>
+            </div>
+
+            <!-- Custom Recipes Card -->
+            <div class="metric-card info">
+                <div class="metric-header">
+                    <span class="metric-label">Custom Recipes</span>
+                    <div class="metric-icon custom-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path d="M12 2l-5.5 9h11z" />
+                            <circle cx="17.5" cy="17.5" r="4.5" />
+                            <path d="M3 13.5h8v8H3z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalMyRecipes}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">User-created</span>
+                </div>
+            </div>
+
+            <!-- Shared Recipes Card -->
+            <div class="metric-card accent">
+                <div class="metric-header">
+                    <span class="metric-label">Shared Recipes</span>
+                    <div class="metric-icon shared-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path
+                                d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalSharedRecipes}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">Community shares</span>
+                </div>
+            </div>
+
+            <!-- Comments Card -->
+            <div class="metric-card purple">
+                <div class="metric-header">
+                    <span class="metric-label">Comments</span>
+                    <div class="metric-icon comments-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalComments}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">User feedback</span>
+                </div>
+            </div>
+
+            <!-- External Recipes Card -->
+            <div class="metric-card pink">
+                <div class="metric-header">
+                    <span class="metric-label">API Recipes</span>
+                    <div class="metric-icon external-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28">
+                            <path
+                                d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="metric-value">{{totalExternalRecipes}}</div>
+                <div class="metric-footer">
+                    <span class="metric-description">From external API</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="dashboard-footer">
+            <span class="footer-meta">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="16">
+                    <path
+                        d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                </svg>
+                Last updated: {{currentDate | date:'short'}}
+            </span>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-dashboard" *ngIf="totalUsers === 0 && totalFavorites === 0 && totalMealPlans === 0">
+            <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" height="80" viewBox="0 0 24 24" width="80">
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                </svg>
+            </div>
+            <h3>No Data Available</h3>
+            <p>Statistics will appear once users start engaging with the platform</p>
+        </div>
+    </div>
+</div>

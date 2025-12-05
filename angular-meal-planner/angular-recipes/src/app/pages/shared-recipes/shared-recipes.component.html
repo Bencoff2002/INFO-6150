@@ -1,0 +1,84 @@
+<div class="shared-recipes-container">
+    <div class="page-header">
+        <button class="back-button" (click)="goBack()" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+        </button>
+        <div class="header-content">
+            <div>
+                <h1 class="page-title">Shared Recipes</h1>
+                <p class="page-subtitle">Discover recipes shared by the community</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Not Logged In -->
+    <div *ngIf="!user && !loading" class="login-prompt">
+        <svg class="prompt-icon" xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 0 24 24" width="64">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path
+                d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
+        </svg>
+        <h3 class="prompt-title">Sign In Required</h3>
+        <p class="prompt-text">Please log in to view recipes shared by other users</p>
+        <button class="login-button" (click)="navigateToLogin()">Log In</button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading shared recipes...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-container">
+        <div class="alert alert-error">{{ error }}</div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="user && !loading && !error && sharedRecipes.length === 0" class="empty-container">
+        <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 0 24 24" width="64">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path
+                d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
+        </svg>
+        <h3 class="empty-title">No Shared Recipes Yet</h3>
+        <p class="empty-text">No one has shared any recipes yet. Check back later!</p>
+    </div>
+
+    <!-- Recipes Grid with Share Info -->
+    <div *ngIf="user && !loading && !error && sharedRecipes.length > 0" class="recipes-grid">
+        <div *ngFor="let share of sharedRecipes" class="recipe-item">
+            <div class="share-header">
+                <div class="share-info">
+                    <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24"
+                        width="16" fill="currentColor">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
+                    </svg>
+                    <span class="share-text">
+                        <strong>{{ share.sharedByName }}</strong>
+                    </span>
+                </div>
+                <span class="share-time">{{ getRelativeTime(share.createdAt) }}</span>
+            </div>
+
+            <div *ngIf="share.message" class="share-message">
+                <svg class="message-icon" xmlns="http://www.w3.org/2000/svg" height="14" viewBox="0 0 24 24" width="14"
+                    fill="currentColor">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
+                </svg>
+                <p class="message-text">"{{ share.message }}"</p>
+            </div>
+
+            <div class="recipe-card-wrapper" (click)="handleRecipeClick(share.recipeId)">
+                <app-recipe-card [recipe]="share.recipe" [sharedByName]="share.sharedByName"></app-recipe-card>
+            </div>
+        </div>
+    </div>
+</div>
