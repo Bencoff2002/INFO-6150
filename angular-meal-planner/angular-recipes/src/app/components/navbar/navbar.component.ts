@@ -159,17 +159,28 @@ export class NavbarComponent implements OnInit {
     }
 
     handleLogout() {
-        console.log('[Navbar] User logging out, isAdmin:', this.user?.isAdmin);
+        console.log('[Navbar] ===== LOGOUT INITIATED =====');
+        console.log('[Navbar] Current user:', this.user?.email);
+        console.log('[Navbar] Is admin:', this.user?.isAdmin);
+
         const isAdmin = this.user?.isAdmin;
+
+        console.log('[Navbar] Calling authService.logout()');
         this.authService.logout();
         this.userMenuOpen = false;
 
-        // Redirect admin to login, regular users to home
+        console.log('[Navbar] Session cleared, redirecting...');
+
+        // Redirect admin to login page, regular users to guest home page
         if (isAdmin) {
+            console.log('[Navbar] Redirecting admin to login page');
             this.router.navigate(['/login']);
         } else {
+            console.log('[Navbar] Redirecting user to guest home page (/)');
             this.router.navigate(['/']);
         }
+
+        console.log('[Navbar] ===== LOGOUT COMPLETE =====');
     }
 
     navigateTo(path: string) {
