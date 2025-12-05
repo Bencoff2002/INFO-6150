@@ -1,0 +1,11 @@
+<div class="recipe-card" (click)="onOpen()">
+    <img [src]="recipe.image" [alt]="recipe.title" [title]="recipe.title" class="recipe-image" />
+    <div class="recipe-content">
+        <h3 class="recipe-title">{{ recipe.title }}</h3>
+        <p class="recipe-summary">{{ recipe.summary }}</p>
+        <div class="recipe-meta">
+            <span *ngIf="recipe.readyInMinutes">⏱️ {{ recipe.readyInMinutes }} min</span>
+            <span *ngIf="recipe.servings">👥 {{ recipe.servings }} servings</span>
+        </div>
+    </div>
+</div>

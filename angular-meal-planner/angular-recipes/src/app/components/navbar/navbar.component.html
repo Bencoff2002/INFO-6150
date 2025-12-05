@@ -1,0 +1,20 @@
+<nav class="navbar">
+    <div class="navbar-brand">
+        <span class="navbar-icon">🍽️</span>
+        <a routerLink="/" class="navbar-title">CEECOFF</a>
+    </div>
+    <div class="navbar-links">
+        <a routerLink="/" class="navbar-link">Recipes</a>
+        <a routerLink="/my-recipes" class="navbar-link">My Recipe Book</a>
+        <button class="navbar-link" (click)="handleSearch()" [disabled]="loading">Search</button>
+        <input type="text" [(ngModel)]="searchTerm" placeholder="Search recipes..." />
+        <a routerLink="/shared-recipes" class="navbar-link">Shared Recipes</a>
+        <ng-container *ngIf="user; else loginLink">
+            <span class="navbar-user">{{ user.name || 'User' }}</span>
+            <button class="navbar-link" (click)="handleLogout()">Logout</button>
+        </ng-container>
+        <ng-template #loginLink>
+            <a routerLink="/login" class="navbar-link">Login</a>
+        </ng-template>
+    </div>
+</nav>

@@ -1,0 +1,35 @@
+<div class="home-container">
+    <app-navbar [searchTerm]="searchTerm" (search)="handleSearch()" [loading]="loading" [user]="user"
+        (logout)="handleLogout()"></app-navbar>
+
+    <div class="hero">
+        <h2>Explore <span class="highlight">Culinary</span> Insights</h2>
+        <h6>Discover amazing recipes for every taste</h6>
+        <div class="categories">
+            <button *ngFor="let category of categories" [class.active]="activeCategory.label === category.label"
+                (click)="handleCategorySelect(category)">
+                {{ category.icon }} {{ category.label }}
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+    <div *ngIf="recipes.length > 0">
+        <div class="recipe-grid">
+            <div *ngFor="let recipe of recipes">
+                <app-recipe-card [recipe]="recipe" [user]="user" [favorites]="favorites"></app-recipe-card>
+            </div>
+        </div>
+        <div class="pagination" *ngIf="totalResults > recipesPerPage">
+            <button (click)="fetchPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+            <span>Page {{ currentPage }} of {{ totalResults / recipesPerPage | ceil }}</span>
+            <button (click)="fetchPage(currentPage + 1)"
+                [disabled]="currentPage >= (totalResults / recipesPerPage)">Next</button>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && searchTerm && recipes.length === 0" class="alert alert-info">
+        No recipes found for "{{ searchTerm }}". Try different keywords!
+    </div>
+</div>
