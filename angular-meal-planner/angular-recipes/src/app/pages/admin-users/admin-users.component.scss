@@ -488,3 +488,184 @@
         }
     }
 }
+
+:host-context(body.dark-theme) {
+    .users-management {
+        background: var(--bg-primary);
+    }
+
+    .dashboard-header {
+        .back-button {
+            background: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+
+            &:hover {
+                background: var(--bg-secondary);
+                border-color: var(--text-primary);
+            }
+        }
+
+        .header-content {
+            h1 {
+                color: var(--text-primary);
+            }
+        }
+    }
+
+    .users-container {
+        background: var(--card-bg);
+
+        .table-header {
+            background: var(--card-bg);
+
+            h2 {
+                color: var(--text-primary);
+            }
+        }
+
+        .users-table {
+            thead {
+                background: var(--bg-secondary);
+
+                th {
+                    color: var(--text-secondary);
+                }
+            }
+
+            tbody {
+                tr {
+                    &:hover {
+                        background: var(--bg-secondary);
+                    }
+                }
+
+                td {
+                    color: var(--text-primary);
+
+                    &.td-number {
+                        color: var(--text-primary);
+                    }
+
+                    &.td-name {
+                        .user-info {
+                            .user-avatar {
+                                background: var(--bg-secondary);
+                                border-color: var(--border-color);
+                                color: var(--text-primary);
+                            }
+
+                            span {
+                                color: var(--text-primary);
+                            }
+                        }
+                    }
+
+                    &.td-username {
+                        color: var(--text-secondary);
+                    }
+
+                    &.td-role {
+                        .role-badge {
+                            color: var(--text-primary);
+                        }
+                    }
+
+                    &.td-actions {
+                        .action-menu-container {
+                            .menu-button {
+                                .dot {
+                                    background: var(--text-primary);
+                                }
+
+                                &:hover {
+                                    background: var(--bg-secondary);
+                                }
+                            }
+
+                            .dropdown-menu-old {
+                                background: var(--card-bg);
+                                border-color: var(--border-color);
+
+                                .menu-item {
+                                    color: var(--text-primary);
+
+                                    &:hover {
+                                        background: var(--bg-secondary);
+                                    }
+
+                                    &.delete {
+                                        border-top-color: var(--border-color);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .dashboard-footer {
+        border-top-color: var(--border-color);
+
+        .footer-meta {
+            color: var(--text-secondary);
+
+            svg {
+                fill: var(--text-secondary);
+            }
+        }
+    }
+
+    .loading-state,
+    .error-state {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+
+        h3 {
+            color: var(--text-primary);
+        }
+
+        p {
+            color: var(--text-secondary);
+        }
+
+        .loader {
+            border-color: var(--border-color);
+            border-top-color: var(--primary-color);
+        }
+
+        svg {
+            fill: var(--text-primary);
+        }
+    }
+
+    .empty-state {
+        svg {
+            fill: var(--text-secondary);
+        }
+
+        p {
+            color: var(--text-secondary);
+        }
+    }
+}
+
+// Global override for portal if it exists in body
+body.dark-theme .dropdown-menu-portal .dropdown-menu {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+
+    .menu-item {
+        color: var(--text-primary);
+
+        &:hover {
+            background: var(--bg-secondary);
+        }
+
+        &.delete {
+            border-top-color: var(--border-color);
+        }
+    }
+}

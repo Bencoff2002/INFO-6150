@@ -154,3 +154,49 @@
     background: #bdbdbd;
     cursor: not-allowed;
 }
+
+// Dark Theme Styles
+:host-context(body.dark-theme) .home-container {
+    background: var(--background-default, #121212);
+}
+
+:host-context(body.dark-theme) .hero h1,
+:host-context(body.dark-theme) .hero h2,
+:host-context(body.dark-theme) .hero p,
+:host-context(body.dark-theme) .admin-welcome .welcome-header h1 {
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .highlight {
+    color: #FF9F29;
+}
+
+:host-context(body.dark-theme) .categories button {
+    background: #333;
+    color: var(--text-secondary, #b0b0b0);
+
+    &.active,
+    &:hover {
+        background: #FF9F29;
+        color: #000;
+    }
+}
+
+:host-context(body.dark-theme) .loading-container p {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .pagination button {
+    background: #333;
+    color: var(--text-primary, #ffffff);
+
+    &:hover:not(:disabled) {
+        background: #FF9F29;
+        color: #000;
+    }
+
+    &:disabled {
+        background: #222;
+        color: #666;
+    }
+}

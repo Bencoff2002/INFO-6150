@@ -2,7 +2,7 @@ export interface MealPlan {
     id: string;
     userId: string;
     title: string;
-    day: string; // 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
+    day: string; // 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' 
     mealType: string; // 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'
     recipeId: string | number;
     recipeTitle: string;
@@ -37,7 +37,7 @@ export interface SavedMealPlan {
     updatedAt: string;
 }
 
-export const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+export const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', ] as const;
 export const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const;
 
 export type DayOfWeek = typeof DAYS_OF_WEEK[number];

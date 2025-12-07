@@ -273,3 +273,44 @@
     background-color: #e3f2fd;
     color: #1565c0;
 }
+
+// Dark Theme Styles
+:host-context(body.dark-theme) .recipe-detail-container {
+    background: var(--background-default, #121212);
+}
+
+:host-context(body.dark-theme) .recipe-title,
+:host-context(body.dark-theme) .column-title,
+:host-context(body.dark-theme) .ingredient-item,
+:host-context(body.dark-theme) .ingredients-text,
+:host-context(body.dark-theme) .instructions-text,
+:host-context(body.dark-theme) .nutrient-name,
+:host-context(body.dark-theme) .nutrient-value {
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .recipe-summary,
+:host-context(body.dark-theme) .nutrition-subtitle,
+:host-context(body.dark-theme) .no-content,
+:host-context(body.dark-theme) .no-content-italic,
+:host-context(body.dark-theme) .back-text {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .back-button {
+    color: var(--text-secondary, #b0b0b0);
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+:host-context(body.dark-theme) .alert-error {
+    background-color: #3e2723;
+    color: #ffcdd2;
+}
+
+:host-context(body.dark-theme) .alert-info {
+    background-color: #0d47a1;
+    color: #bbdefb;
+}

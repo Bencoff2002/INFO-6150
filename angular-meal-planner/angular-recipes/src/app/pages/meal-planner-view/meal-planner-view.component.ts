@@ -109,6 +109,8 @@ import { take } from 'rxjs/operators';
             font-weight: 600;
             margin: 0;
             color: rgba(0, 0, 0, 0.87);
+            text-align: center;
+            flex: 1;
         }
 
         .loading {

@@ -63,9 +63,11 @@ export class HomeComponent implements OnInit {
 
         // Also subscribe to changes
         this.authService.user$.subscribe(user => {
+            console.log('[HomeComponent] User updated:', user?.email);
             const wasAdmin = this.isAdmin;
             this.isAdmin = user?.isAdmin || false;
             this.user = user;
+            this.cdr.detectChanges();
 
             // If admin status changed and now not admin, load recipes
             if (wasAdmin && !this.isAdmin) {

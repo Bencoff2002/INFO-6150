@@ -1,25 +1,42 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, NavigationStart } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
+
+import { MessageDialogComponent } from '../../components/message-dialog/message-dialog.component';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [CommonModule, ReactiveFormsModule, MessageDialogComponent], // Import MessageDialogComponent
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
     loginForm: FormGroup;
     isLogin = true;
     loading = false;
-    error = '';
+    error: string = '';
+    showErrorDialog = false; // Add dialog state
     showPasswordChangePrompt = false;
-    isBlockedUser = false; // Flag to track blocked user state
+    isBlockedUser = false;
+    private routerSubscription: Subscription | null = null;
+    fromPage: string | null = null;
 
+    // ... existing properties ...
+
+    // ... existing methods ...
+
+
+
+    closeErrorDialog() {
+        this.showErrorDialog = false;
+        this.error = ''; // Optionally clear error when dialog closes
+    }
+
+    // ... (rest of class) ...
     // Lockout state
     isLocked = false;
     lockoutEndTime: number | null = null;
@@ -32,8 +49,6 @@ export class LoginComponent implements OnInit {
         { value: 'dairyFree', label: 'Dairy Free' }
     ];
 
-    showBackArrow = false;
-    private fromPage: string | null = null;
 
     constructor(
         private fb: FormBuilder,
@@ -51,21 +66,48 @@ export class LoginComponent implements OnInit {
     }
 
     ngOnInit() {
-        // Check for existing lockout
-        const email = this.loginForm.get('email')?.value;
-        if (email) {
-            this.checkLockout(email);
+        try {
+            console.log('[LoginComponent] ===== INIT START =====');
+            console.log('[LoginComponent] AuthService.isAuthenticated():', this.authService.isAuthenticated());
+
+            // Monitor navigation events to debug redirects
+            this.routerSubscription = this.router.events.subscribe(event => {
+                if (event instanceof NavigationStart) {
+                    console.log('[LoginComponent] NavigationStart detected:', event.url);
+                    console.log('[LoginComponent] Navigation trigger:', event.navigationTrigger);
+                    console.log('[LoginComponent] Restored state:', event.restoredState);
+                }
+            });
+
+            // Check for existing lockout
+            const email = this.loginForm.get('email')?.value;
+            if (email) {
+                this.checkLockout(email);
+            }
+
+            // Check navigation state and query params
+            const state = history.state;
+            console.log('[LoginComponent] History state:', state);
+            this.fromPage = state?.from || this.route.snapshot.queryParams['returnUrl'] || null;
+            console.log('[LoginComponent] fromPage:', this.fromPage);
+
+            // Monitor email changes to check lockout status
+            this.loginForm.get('email')?.valueChanges.subscribe(email => {
+                // console.log('[LoginComponent] Email changed:', email); // Too noisy
+                this.checkLockout(email);
+            });
+            console.log('[LoginComponent] ===== INIT COMPLETE =====');
+        } catch (e) {
+            console.error('[LoginComponent] CRITICAL ERROR IN NGONINIT:', e);
+            // Don't re-throw, to avoid crashing the route
         }
+    }
 
-        // Check navigation state and query params
-        const state = history.state;
-        this.fromPage = state?.from || this.route.snapshot.queryParams['returnUrl'] || null;
-        this.showBackArrow = !!this.fromPage && this.fromPage !== '/login';
-
-        // Monitor email changes to check lockout status
-        this.loginForm.get('email')?.valueChanges.subscribe(email => {
-            this.checkLockout(email);
-        });
+    ngOnDestroy() {
+        console.log('[LoginComponent] ===== DESTROY =====');
+        if (this.routerSubscription) {
+            this.routerSubscription.unsubscribe();
+        }
     }
 
     checkLockout(email: string) {
@@ -152,6 +194,7 @@ export class LoginComponent implements OnInit {
         console.log('[LoginComponent] Setting loading to true, clearing error');
         this.loading = true;
         this.error = '';
+        this.showErrorDialog = false; // Reset dialog
         const formData = this.loginForm.value;
         console.log('[LoginComponent] Form data email:', formData.email);
 
@@ -176,18 +219,33 @@ export class LoginComponent implements OnInit {
 
                     // Navigate based on user role
                     let redirectTo: string;
+                    console.warn('[LoginComponent] Debugging Redirect Logic:');
+                    console.warn('[LoginComponent] - User isAdmin:', user.isAdmin);
+                    console.warn('[LoginComponent] - fromPage:', this.fromPage);
+                    console.warn('[LoginComponent] - fromPage startsWith /admin:', this.fromPage?.startsWith('/admin'));
+                    console.warn('[LoginComponent] - fromPage startsWith /dashboard:', this.fromPage?.startsWith('/dashboard'));
+
                     if (user && user.isAdmin) {
                         // Admin user - redirect to home page
+                        console.warn('[LoginComponent] - Redirect Decision: Admin -> /');
                         redirectTo = '/';
                     } else {
                         // Regular user - use fromPage if it's safe, otherwise default to root
                         // Avoid redirecting to admin pages
                         if (this.fromPage && !this.fromPage.startsWith('/admin') && !this.fromPage.startsWith('/dashboard')) {
+                            console.warn('[LoginComponent] - Redirect Decision: Regular User -> using fromPage:', this.fromPage);
                             redirectTo = this.fromPage;
                         } else {
+                            console.warn('[LoginComponent] - Redirect Decision: Regular User -> default to /');
                             redirectTo = '/';
                         }
                     }
+                    console.warn('[LoginComponent] Final Redirect Target:', redirectTo);
+
+                    // Verify auth state before navigating
+                    const currentUser = this.authService.getCurrentUser();
+                    console.log('[LoginComponent] Pre-navigation Auth Check:', currentUser?.email);
+
                     this.router.navigate([redirectTo], { replaceUrl: true });
 
                 } catch (loginError: any) {
@@ -222,9 +280,10 @@ export class LoginComponent implements OnInit {
                         // Stop loading immediately and show error
                         this.loading = false;
                         this.error = loginError.message;
+                        this.showErrorDialog = true; // Show dialog for blocked user too
 
                         console.log('[LoginComponent] After setting - loading:', this.loading, 'error:', this.error);
-                        console.log('[LoginComponent] Error message length:', this.error.length);
+                        console.log('[LoginComponent] Error message length:', this.error ? this.error.length : 0);
                         console.log('[LoginComponent] isBlockedUser flag set to:', this.isBlockedUser);
 
                         // Force Angular to detect changes and update the UI
@@ -243,6 +302,7 @@ export class LoginComponent implements OnInit {
                             console.log('[LoginComponent] Clearing error and redirecting to guest home page');
                             this.error = '';
                             this.isBlockedUser = false;
+                            this.showErrorDialog = false; // Close dialog
                             this.router.navigate(['/'], { replaceUrl: true });
                         }, 5000);
 
@@ -286,7 +346,26 @@ export class LoginComponent implements OnInit {
             console.log('[LoginComponent] ===== OUTER CATCH BLOCK =====');
             console.log('[LoginComponent] Outer error:', e);
             console.log('[LoginComponent] Outer error message:', e.message);
-            this.error = e.message || 'An error occurred';
+
+            // Check for invalid credentials error
+            // Use includes to be safer against minor variations
+            if (e.message && (e.message === 'Invalid email or password' || e.message.includes('Invalid email'))) {
+                console.log('[LoginComponent] Detected invalid credentials error');
+                this.error = 'Your email or password is incorrect';
+                this.showErrorDialog = true;
+                this.cdr.detectChanges(); // Force update
+
+                console.log('[LoginComponent] Error dialog visible, staying on page to allow retry');
+
+                // User requested to NOT redirect to guest page on login failure
+                // so they can retry entering the password.
+            } else {
+                console.log('[LoginComponent] Generic error handler');
+                this.error = e.message || 'An error occurred';
+                this.showErrorDialog = true;
+                this.cdr.detectChanges(); // Force update
+            }
+
             console.log('[LoginComponent] Error set in outer catch:', this.error);
         } finally {
             console.log('[LoginComponent] ===== FINALLY BLOCK =====');
@@ -304,26 +383,6 @@ export class LoginComponent implements OnInit {
 
             console.log('[LoginComponent] Loading is now:', this.loading);
             console.log('[LoginComponent] Error is now:', this.error);
-        }
-    }
-
-    handleBackClick() {
-        console.log('[LoginComponent] Back button clicked');
-
-        // Check if current user is blocked
-        const currentUser = this.authService.getCurrentUser();
-        if (currentUser?.isBlocked) {
-            console.log('[LoginComponent] User is blocked, clearing session');
-            this.authService.logout();
-            this.error = 'Your account has been blocked. Please contact the administrator.';
-            return;
-        }
-
-        // Navigate back only if user is not blocked
-        if (this.fromPage) {
-            this.router.navigateByUrl(this.fromPage);
-        } else {
-            this.router.navigate(['/']);
         }
     }
 

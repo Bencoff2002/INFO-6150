@@ -452,3 +452,128 @@
         }
     }
 }
+
+:host-context(body.dark-theme) {
+    .report-container {
+        background: var(--bg-primary);
+    }
+
+    .report-header {
+        .back-button {
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+
+            &:hover {
+                background: var(--bg-secondary);
+                border-color: var(--text-primary);
+            }
+        }
+
+        h1 {
+            color: var(--text-primary);
+        }
+
+        .export-buttons {
+            .export-btn {
+                background: var(--card-bg);
+                border-color: var(--border-color);
+                color: var(--text-secondary);
+
+                svg {
+                    fill: var(--text-secondary);
+                }
+
+                &:hover {
+                    background: var(--bg-secondary);
+                    border-color: var(--text-primary);
+                }
+            }
+        }
+    }
+
+    .loading-container,
+    .error-container {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+
+        p {
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border-color: var(--border-color);
+            border-top-color: var(--primary-color);
+        }
+    }
+
+    .table-container {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+    }
+
+    .report-footer {
+        p {
+            color: var(--text-secondary);
+        }
+    }
+
+    .report-table {
+        thead {
+            background: var(--bg-secondary);
+            border-bottom-color: var(--border-color);
+
+            tr th {
+                color: var(--text-secondary);
+            }
+        }
+
+        tbody {
+            tr {
+                border-bottom-color: var(--border-color);
+
+                &:hover {
+                    background-color: var(--bg-secondary);
+                }
+
+                td {
+                    color: var(--text-primary);
+
+                    &.col-rank {
+                        .rank-cell {
+                            .rank-number {
+                                background: var(--bg-secondary);
+                                color: var(--text-secondary);
+
+                                &.gold,
+                                &.silver,
+                                &.bronze {
+                                    color: #fff;
+                                }
+                            }
+                        }
+                    }
+
+                    &.col-recipe {
+                        .recipe-cell {
+                            .recipe-info {
+                                .recipe-name {
+                                    color: var(--text-primary);
+                                }
+
+                                .recipe-id {
+                                    color: var(--text-secondary);
+                                }
+                            }
+                        }
+                    }
+
+                    &.col-views {
+                        .views-cell {
+                            color: var(--text-primary);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

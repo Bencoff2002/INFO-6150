@@ -11,11 +11,12 @@ import { Router } from '@angular/router';
             <!-- Navbar -->
             <nav class="navbar">
                 <div class="navbar-content">
-                    <button class="nav-link" (click)="navigateHome()">
+                    <button class="nav-link" (click)="goBack()">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20">
-                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                            <path d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                         </svg>
-                        Home
+                        Back
                     </button>
                 </div>
             </nav>
@@ -29,7 +30,7 @@ import { Router } from '@angular/router';
                         </svg>
                         Meal Planner
                     </h1>
-                    <p class="subtitle">Plan your weekly meals with ease</p>
+                    
                 </div>
 
                 <div class="actions-grid">
@@ -82,11 +83,9 @@ import { Router } from '@angular/router';
     `,
     styles: [`
         .navbar {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background: transparent;
+            position: relative;
+            z-index: 10;
             padding: 12px 0;
         }
 
@@ -103,14 +102,15 @@ import { Router } from '@angular/router';
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            background: transparent;
-            border: none;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.95rem;
             font-weight: 500;
-            color: #2c3e50;
+            color: var(--text-primary);
             transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .nav-link svg {
@@ -118,8 +118,10 @@ import { Router } from '@angular/router';
         }
 
         .nav-link:hover {
-            background: rgba(255, 159, 41, 0.1);
-            color: #FF9F29;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .landing-container {
@@ -268,16 +270,65 @@ import { Router } from '@angular/router';
                 padding: 32px 24px;
             }
         }
+
+        /* Dark Theme */
+        :host-context(body.dark-theme) .landing-container {
+            background: var(--bg-primary);
+        }
+
+        :host-context(body.dark-theme) .title {
+            color: var(--text-primary);
+        }
+
+        :host-context(body.dark-theme) .subtitle {
+            color: var(--text-secondary);
+        }
+
+        :host-context(body.dark-theme) .action-card {
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+            &:hover {
+                background: var(--card-bg);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        :host-context(body.dark-theme) .action-card h2 {
+            color: var(--text-primary);
+        }
+
+        :host-context(body.dark-theme) .action-card p {
+            color: var(--text-secondary);
+        }
+
+        :host-context(body.dark-theme) .nav-link {
+            color: var(--text-primary);
+
+            &:hover {
+                background: rgba(255, 159, 41, 0.15);
+                color: #FF9F29;
+            }
+        }
+
+        /* Force remove navbar background in dark theme (overrides global styles) */
+        :host-context(body.dark-theme) .navbar {
+            background-color: transparent !important;
+            box-shadow: none;
+            border: none;
+        }
     `]
 })
 export class MealPlannerLandingComponent {
-    constructor(private router: Router) { }
+    constructor(
+        private router: Router
+    ) { }
 
     navigateTo(action: string) {
         this.router.navigate(['/meal-planner', action]);
     }
 
-    navigateHome() {
-        this.router.navigate(['/']);
+    goBack() {
+        this.router.navigate(['/home']);
     }
 }

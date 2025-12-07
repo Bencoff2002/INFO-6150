@@ -63,3 +63,146 @@ html {
     opacity: 0;
     transition: opacity 300ms ease-in;
 }
+
+/* Base Variables (Light Theme - Google Material Standard) */
+:root {
+    /* Google's corporate light theme standards */
+    --bg-primary: #F8F9FA;
+    /* Google's standard light grey background */
+    --bg-secondary: #FFFFFF;
+    /* Pure white for cards/surfaces */
+    --bg-tertiary: #F1F3F4;
+    /* Hover/Input background */
+
+    --text-primary: #202124;
+    /* Google's standard "Almost Black" */
+    --text-secondary: #5F6368;
+    /* Google's standard secondary grey */
+    --border-color: #DADCE0;
+    /* Google's standard border color */
+
+    --card-bg: #FFFFFF;
+    --shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    /* Google-style shallow shadow */
+
+    --accent-color: #1a73e8;
+    /* Default blue accent for light mode */
+}
+
+/* Custom Dark Theme - User Requested Light Gray Background */
+body.dark-theme {
+    /* Backgrounds - Light Gray */
+    --bg-primary: #F0F2F5;
+    /* Light Gray Background */
+    --bg-secondary: #FFFFFF;
+    /* White Surface/Card for contrast */
+    --bg-tertiary: #E4E6EB;
+    /* Inputs */
+
+    /* Aliases for component compatibility */
+    --background-default: var(--bg-primary);
+    --background-paper: var(--bg-secondary);
+
+    /* Text - Dark for visibility on light gray */
+    --text-primary: #1C1E21;
+    /* Almost Black */
+    --text-secondary: #65676B;
+    /* Dark Gray */
+    --border-color: #CED0D4;
+
+    /* Surfaces */
+    --card-bg: #FFFFFF;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+    /* Accents */
+    --accent-color: #FF9F29;
+
+    /* Global overrides */
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+}
+
+/* Ensure components use variables */
+body.dark-theme .card,
+body.dark-theme .navbar,
+body.dark-theme .dropdown-menu,
+body.dark-theme .dialog,
+body.dark-theme .recipe-card {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme input,
+body.dark-theme textarea,
+body.dark-theme select {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+body.dark-theme button.primary,
+body.dark-theme .btn-primary {
+    background-color: var(--accent-color);
+    color: #FFFFFF;
+    /* White text on accent */
+}
+
+/* User requested all other buttons to be white */
+body.dark-theme button:not(.primary):not(.btn-primary):not(.navbar-link):not(.theme-toggle):not(.search-button):not(.action-btn):not(.menu-item):not(.close-btn),
+body.dark-theme .btn-secondary {
+    background-color: #FFFFFF;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-theme button:not(.primary):not(.btn-primary):not(.navbar-link):not(.theme-toggle):not(.search-button):not(.action-btn):not(.menu-item):not(.close-btn):hover,
+body.dark-theme .btn-secondary:hover {
+    background-color: #F5F5F5;
+    border-color: #B0B3B8;
+}
+
+/* Recipe Card Buttons - White Background */
+body.dark-theme .recipe-card .action-btn {
+    background-color: #FFFFFF;
+    color: var(--text-primary);
+}
+
+body.dark-theme .recipe-card .action-btn:hover {
+    background-color: #F5F5F5;
+}
+
+/* Ensure icons are dark on white background */
+body.dark-theme .recipe-card .action-btn svg {
+    fill: var(--text-primary);
+}
+
+/* Preserve orange color for favorite button */
+body.dark-theme .recipe-card .action-btn.favorite-btn svg {
+    fill: #FF9F29;
+}
+
+body.dark-theme a {
+    color: #1a73e8;
+    /* Standard blue link for white background */
+}
+
+/* Scrollbar for Dark Theme (Light style) */
+body.dark-theme::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+body.dark-theme::-webkit-scrollbar-thumb {
+    background: #FF9F29;
+    border-radius: 4px;
+}
+
+body.dark-theme::-webkit-scrollbar-thumb:hover {
+    background: #E88C1A;
+}

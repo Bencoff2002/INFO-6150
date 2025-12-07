@@ -473,6 +473,177 @@
     }
 }
 
+// Dark Theme Styles
+:host-context(body.dark-theme) .recipe-card {
+    background: var(--card-bg, #1e1e1e);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+}
+
+:host-context(body.dark-theme) .recipe-title,
+:host-context(body.dark-theme) .recipe-name,
+:host-context(body.dark-theme) .dialog-title,
+:host-context(body.dark-theme) .rating-value {
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .recipe-summary,
+:host-context(body.dark-theme) .recipe-meta,
+:host-context(body.dark-theme) .meta-item,
+:host-context(body.dark-theme) .dialog-content,
+:host-context(body.dark-theme) .rating-text,
+:host-context(body.dark-theme) .card-content p {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .action-menu {
+    background: var(--card-bg, #1e1e1e);
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.3),
+        0 8px 10px 1px rgba(0, 0, 0, 0.2),
+        0 3px 14px 2px rgba(0, 0, 0, 0.15);
+}
+
+:host-context(body.dark-theme) .menu-item {
+    color: var(--text-primary, #ffffff);
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    svg {
+        fill: var(--text-secondary, #b0b0b0);
+    }
+
+    &.delete-item {
+        color: #ff5252;
+
+        svg {
+            fill: #ff5252;
+        }
+    }
+}
+
+:host-context(body.dark-theme) .dialog {
+    background: var(--card-bg, #1e1e1e);
+}
+
+:host-context(body.dark-theme) .dialog-close-btn {
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    svg {
+        fill: var(--text-secondary, #b0b0b0);
+    }
+}
+
+:host-context(body.dark-theme) .comment-input {
+    background: #2d2d2d;
+    border-color: #444;
+    color: var(--text-primary, #ffffff);
+
+    &::placeholder {
+        color: var(--text-secondary, #b0b0b0);
+    }
+}
+
+:host-context(body.dark-theme) .menu-header {
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+
+    .shared-by-text {
+        color: var(--text-secondary, #b0b0b0);
+    }
+}
+
+:host-context(body.dark-theme) .share-link-input {
+    background: #2d2d2d;
+    border-color: #444;
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .share-link-text {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .action-menu-item {
+    color: var(--text-primary, #ffffff);
+
+    &:hover {
+        background: rgba(255, 159, 41, 0.15);
+        color: #FF9F29;
+    }
+
+    svg {
+        fill: currentColor;
+    }
+}
+
+:host-context(body.dark-theme) .dialog-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+:host-context(body.dark-theme) .dialog {
+    background: var(--card-bg, #1e1e1e);
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .dialog h2 {
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .form-group label {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .form-group textarea {
+    background: var(--bg-primary, #121212);
+    border-color: var(--border-color, #333333);
+    color: var(--text-primary, #ffffff);
+
+    &:focus {
+        border-color: #FF9F29;
+        background: var(--bg-primary, #121212);
+    }
+}
+
+:host-context(body.dark-theme) .action-btn {
+    background: rgba(30, 30, 30, 0.95);
+
+    &:hover {
+        background: #2c2c2c;
+    }
+
+    svg {
+        fill: rgba(236, 240, 241, 0.9);
+    }
+}
+
+:host-context(body.dark-theme) .favorite-btn svg {
+    fill: #FF9F29;
+}
+
+:host-context(body.dark-theme) .dialog-actions .btn-cancel {
+    background: #465c71;
+    color: #ecf0f1;
+
+    &:hover {
+        background: #576d80;
+    }
+}
+
+:host-context(body.dark-theme) .dialog-actions .btn-submit {
+    background: #FF9F29;
+    color: #2c3e50;
+
+    &:hover {
+        background: #E88C1A;
+    }
+}
+
 // Responsive
 @media (max-width: 768px) {
     .dialog {

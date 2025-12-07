@@ -15,8 +15,8 @@ export const userGuard = () => {
     console.log('[UserGuard] Current user:', currentUser?.email, 'isAdmin:', currentUser?.isAdmin, 'isBlocked:', currentUser?.isBlocked);
 
     if (!currentUser) {
-        console.log('[UserGuard] No current user - redirecting to login');
-        router.navigate(['/login']);
+        console.log('[UserGuard] No current user - session expired - redirecting to guest page');
+        router.navigate(['/']);
         return false;
     }
 
@@ -25,10 +25,16 @@ export const userGuard = () => {
         tap(isValid => console.log('[UserGuard] Validation result:', isValid)),
         switchMap(isValid => {
             if (!isValid) {
-                console.log('[UserGuard] User is blocked - redirecting to login');
-                router.navigate(['/login'], {
-                    queryParams: { blocked: 'true' }
-                });
+                const user = authService.getCurrentUser();
+                if (user?.isAdmin) {
+                    console.log('[UserGuard] Admin blocked/invalid - redirecting to login');
+                    router.navigate(['/login'], {
+                        queryParams: { blocked: 'true' }
+                    });
+                } else {
+                    console.log('[UserGuard] User blocked/invalid - redirecting to guest page');
+                    router.navigate(['/']);
+                }
                 return of(false);
             }
 

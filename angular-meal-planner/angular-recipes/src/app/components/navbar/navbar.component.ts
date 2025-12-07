@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, HostListener, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
     selector: 'app-navbar',
@@ -22,17 +23,26 @@ export class NavbarComponent implements OnInit {
     dashboardMenuOpen = false;
     reportsMenuOpen = false;
     adminMenuOpen = false;
+    isDarkMode = false;
 
     constructor(
         private authService: AuthService,
         private router: Router,
-        private elementRef: ElementRef
+        private elementRef: ElementRef,
+        public themeService: ThemeService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
         this.authService.user$.subscribe(user => {
-            this.user = user;
             console.log('[Navbar] User updated:', user?.email, 'isBlocked:', user?.isBlocked);
+            this.user = user;
+            this.cdr.detectChanges();
+        });
+
+        // Subscribe to theme changes
+        this.themeService.isDarkMode$.subscribe(isDark => {
+            this.isDarkMode = isDark;
         });
 
         // Periodically validate user status to catch blocks in real-time
@@ -40,18 +50,27 @@ export class NavbarComponent implements OnInit {
             console.log('[Navbar] Starting periodic validation check (every 30 seconds)');
             setInterval(() => {
                 console.log('[Navbar] Running periodic validation check');
+                const currentUser = this.authService.getCurrentUser();
                 this.authService.validateUserStatus().subscribe(isValid => {
                     console.log('[Navbar] Periodic check result:', isValid);
                     if (!isValid) {
-                        console.log('[Navbar] User is blocked - redirecting to login');
-                        // User was blocked - redirect to login
-                        this.router.navigate(['/login'], {
-                            queryParams: { blocked: 'true' }
-                        });
+                        if (currentUser?.isAdmin) {
+                            console.log('[Navbar] Admin blocked/invalid - redirecting to login');
+                            this.router.navigate(['/login'], {
+                                queryParams: { blocked: 'true' }
+                            });
+                        } else {
+                            console.log('[Navbar] User blocked/invalid - redirecting to guest page');
+                            this.router.navigate(['/']);
+                        }
                     }
                 });
             }, 30000); // Check every 30 seconds
         }
+    }
+
+    toggleTheme() {
+        this.themeService.toggleTheme();
     }
 
     @HostListener('document:click', ['$event'])
@@ -187,4 +206,6 @@ export class NavbarComponent implements OnInit {
         this.userMenuOpen = false;
         this.router.navigate([path]);
     }
+
+
 }

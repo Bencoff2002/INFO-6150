@@ -231,6 +231,39 @@ import { FormsModule } from '@angular/forms';
             box-shadow: none;
             cursor: not-allowed;
         }
+
+        /* Dark Theme Styles */
+        :host-context(body.dark-theme) .dialog {
+            background: var(--card-bg, #1e1e1e);
+        }
+
+        :host-context(body.dark-theme) .dialog-title,
+        :host-context(body.dark-theme) .form-group label {
+            color: var(--text-primary, #ffffff);
+        }
+
+        :host-context(body.dark-theme) .form-control {
+            background: #2d2d2d;
+            border-color: #444;
+            color: var(--text-primary, #ffffff);
+        }
+
+        :host-context(body.dark-theme) .info-text {
+            background: #2d2d2d;
+            color: var(--text-secondary, #b0b0b0);
+        }
+
+        :host-context(body.dark-theme) .close-btn svg {
+            fill: var(--text-secondary, #b0b0b0);
+        }
+
+        :host-context(body.dark-theme) .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        :host-context(body.dark-theme) .btn-primary {
+            color: #000;
+        }
     `]
 })
 export class SaveMealPlanDialogComponent {

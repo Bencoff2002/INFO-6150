@@ -1,0 +1,145 @@
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+    selector: 'app-message-dialog',
+    standalone: true,
+    imports: [CommonModule],
+    template: `
+        <div class="dialog-overlay" (click)="onClose()">
+            <div class="dialog" (click)="$event.stopPropagation()">
+                <div class="dialog-header" [ngClass]="type">
+                    <h2 class="dialog-title">{{ title }}</h2>
+                </div>
+                
+                <div class="dialog-content">
+                    <p class="message">{{ message }}</p>
+                </div>
+
+                <div class="dialog-actions">
+                    <button class="btn" (click)="onClose()">OK</button>
+                </div>
+            </div>
+        </div>
+    `,
+    styles: [`
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .dialog {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+            font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .dialog-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dialog-header.error .dialog-title { color: #d32f2f; }
+        .dialog-header.success .dialog-title { color: #388e3c; }
+        .dialog-header.info .dialog-title { color: #1976d2; }
+
+        .dialog-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .dialog-content {
+            padding: 24px;
+        }
+
+        .message {
+            margin: 0;
+            color: rgba(0, 0, 0, 0.87);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .dialog-actions {
+            padding: 8px 16px 16px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            letter-spacing: 0.02857em;
+            box-shadow: 0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14);
+        }
+
+        .btn:hover {
+            background: #1565c0;
+            box-shadow: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14);
+        }
+
+        /* Dark Theme Styles */
+        :host-context(body.dark-theme) .dialog {
+            background: var(--card-bg, #1e1e1e);
+        }
+
+        :host-context(body.dark-theme) .dialog-header {
+            border-bottom-color: #444;
+        }
+
+        :host-context(body.dark-theme) .message {
+            color: var(--text-primary, #ffffff);
+        }
+
+        :host-context(body.dark-theme) .btn {
+            background: #FF9F29;
+            color: #000;
+        }
+
+        :host-context(body.dark-theme) .btn:hover {
+            background: #E88C1A;
+        }
+    `]
+})
+export class MessageDialogComponent {
+    @Input() title: string = 'Error';
+    @Input() message: string = '';
+    @Input() type: 'error' | 'info' | 'success' = 'error';
+    @Output() close = new EventEmitter<void>();
+
+    onClose() {
+        this.close.emit();
+    }
+}

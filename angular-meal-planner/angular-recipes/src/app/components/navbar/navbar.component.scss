@@ -9,6 +9,77 @@
     display: flex;
     align-items: center;
     z-index: 1000;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:host-context(body.dark-theme) .navbar {
+    background: var(--background-paper, #1e1e1e);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+:host-context(body.dark-theme) .navbar-title {
+    color: var(--text-primary, #ffffff);
+
+    &:hover {
+        color: #FF9F29;
+    }
+}
+
+:host-context(body.dark-theme) .navbar-link {
+    color: var(--text-secondary, #b0b0b0);
+
+    &:hover {
+        color: #FF9F29;
+        background: rgba(255, 159, 41, 0.1);
+    }
+
+    &.active {
+        color: #FF9F29;
+    }
+}
+
+:host-context(body.dark-theme) .dropdown-menu {
+    background: var(--background-paper, #1e1e1e);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(body.dark-theme) .dropdown-item {
+    color: var(--text-primary, #ffffff);
+
+    &:hover {
+        background: rgba(255, 159, 41, 0.15);
+        color: #FF9F29;
+    }
+}
+
+:host-context(body.dark-theme) .dropdown-divider {
+    background: #444;
+}
+
+:host-context(body.dark-theme) .dropdown-username {
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .dropdown-email {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .login-button {
+    background: #FF9F29;
+    color: #000;
+
+    &:hover {
+        background: #E88C1A;
+    }
+}
+
+:host-context(body.dark-theme) .theme-toggle {
+    color: var(--text-secondary, #b0b0b0);
+
+    &:hover {
+        background: rgba(255, 159, 41, 0.15);
+        color: #FF9F29;
+    }
 }
 
 .navbar-container {
@@ -303,6 +374,35 @@
     .navbar-link {
         padding: 6px 8px;
         font-size: 0.8125rem;
+    }
+}
+
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-left: 12px;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: rgba(255, 159, 41, 0.1);
+        color: #FF9F29;
+    }
+
+    svg {
+        transition: transform 0.3s ease;
+    }
+
+    &:hover svg {
+        transform: rotate(20deg);
     }
 }
 

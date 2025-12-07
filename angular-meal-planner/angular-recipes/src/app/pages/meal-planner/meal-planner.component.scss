@@ -600,3 +600,109 @@
         padding: 4px;
     }
 }
+
+// Dark Theme Styles
+:host-context(body.dark-theme) .meal-planner-container {
+    background: var(--background-default, #121212);
+}
+
+:host-context(body.dark-theme) .page-title,
+:host-context(body.dark-theme) .user-selector label,
+:host-context(body.dark-theme) .day-header,
+:host-context(body.dark-theme) .meal-type-label,
+:host-context(body.dark-theme) .notes-title,
+:host-context(body.dark-theme) .dialog-title {
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .page-subtitle,
+:host-context(body.dark-theme) .notes-subtitle,
+:host-context(body.dark-theme) .dialog-content {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .back-btn {
+    background: #2d2d2d;
+    border-color: #444;
+    color: var(--text-primary, #ffffff);
+
+    &:hover {
+        background: #333;
+        border-color: #FF9F29;
+        color: #FF9F29;
+    }
+}
+
+:host-context(body.dark-theme) .user-select {
+    background: #2d2d2d;
+    border-color: #444;
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .meal-grid {
+    background: #2d2d2d;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(body.dark-theme) .grid-header,
+:host-context(body.dark-theme) .meal-row {
+    background: #444;
+}
+
+:host-context(body.dark-theme) .meal-type-header,
+:host-context(body.dark-theme) .day-header,
+:host-context(body.dark-theme) .meal-type-label,
+:host-context(body.dark-theme) .meal-cell {
+    background: #2d2d2d;
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .weekly-notes-section {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+:host-context(body.dark-theme) .btn-toggle-notes {
+    background: #2d2d2d;
+
+    &:hover {
+        background: rgba(255, 159, 41, 0.1);
+    }
+}
+
+:host-context(body.dark-theme) .btn-hide-notes {
+    color: var(--text-secondary, #b0b0b0);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary, #ffffff);
+    }
+}
+
+:host-context(body.dark-theme) .notes-textarea {
+    background: #1e1e1e;
+    border-color: #444;
+    color: var(--text-primary, #ffffff);
+
+    &:focus {
+        border-color: #FF9F29;
+    }
+
+    &:disabled {
+        background: #121212;
+    }
+}
+
+:host-context(body.dark-theme) .weekly-notes-readonly .notes-content {
+    background: #1e1e1e;
+    border-color: #444;
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .dialog {
+    background: var(--card-bg, #1e1e1e);
+}
+
+:host-context(body.dark-theme) .btn-primary {
+    color: #000;
+}

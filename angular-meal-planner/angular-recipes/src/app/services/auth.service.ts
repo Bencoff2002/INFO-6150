@@ -37,11 +37,18 @@ export class AuthService {
                 const user = JSON.parse(savedUser);
                 console.log('[AuthService] Constructor - Found saved user:', user.email, 'isBlocked:', user.isBlocked);
 
+                // Optimistically set user from local storage to prevent guard race conditions
+                this.userSubject.next(user);
+
                 // Validate user status from server immediately
                 this.http.get<User>(`${this.baseUrl}/users/${user.id}`).pipe(
                     catchError((error) => {
                         console.error('[AuthService] Constructor - Error validating saved user:', error);
-                        localStorage.removeItem('user');
+                        // Only clear if it's a 404 or auth error, not connection error
+                        // For safety, we keep the session if network fails, but maybe strictly verify?
+                        // For now, if validation fails, we assume valid until proven otherwise to avoid lockout on flakey network
+                        // BUT if it's a 404, we must logout.
+                        // Let's rely on the subscription below.
                         return of(null);
                     })
                 ).subscribe(serverUser => {
@@ -49,16 +56,14 @@ export class AuthService {
                         console.log('[AuthService] Constructor - Server user:', serverUser.email, 'isBlocked:', serverUser.isBlocked);
                         if (serverUser.isBlocked) {
                             console.log('[AuthService] Constructor - User is BLOCKED, clearing session');
-                            localStorage.removeItem('user');
-                            this.userSubject.next(null);
+                            this.logout(); // Use logout to clear everything
                         } else {
-                            console.log('[AuthService] Constructor - User is valid, loading session');
-                            this.userSubject.next(serverUser);
-                            localStorage.setItem('user', JSON.stringify(serverUser));
+                            console.log('[AuthService] Constructor - User is valid, updating session');
+                            this.updateUser(serverUser); // Use updateUser to sync
                         }
                     } else {
-                        console.log('[AuthService] Constructor - No server user found, clearing session');
-                        this.userSubject.next(null);
+                        console.log('[AuthService] Constructor - No server user found (or error), clearing session');
+                        this.logout();
                     }
                 });
             } catch (e) {
@@ -165,6 +170,8 @@ export class AuthService {
     }
 
     logout() {
+        console.warn('[AuthService] Logout called. Clearing user session.');
+        console.trace('[AuthService] Logout Trace'); // Helps identify WHO called logout
         this.userSubject.next(null);
         localStorage.removeItem('user');
     }

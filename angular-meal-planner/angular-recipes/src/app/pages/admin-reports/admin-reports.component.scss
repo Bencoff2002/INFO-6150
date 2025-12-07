@@ -291,3 +291,73 @@
         }
     }
 }
+
+:host-context(body.dark-theme) {
+    .reports-landing-container {
+        background: var(--bg-primary);
+    }
+
+    .landing-header {
+        .back-button {
+            background: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+
+            &:hover {
+                background: var(--bg-secondary);
+                border-color: var(--text-primary);
+            }
+        }
+
+        .header-content {
+            h1 {
+                color: var(--text-primary);
+            }
+
+            .header-subtitle {
+                color: var(--text-secondary);
+            }
+
+            .report-metadata {
+                .metadata-item {
+                    color: var(--text-secondary);
+                }
+            }
+        }
+    }
+
+    .report-option-card {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+
+        &:hover {
+            border-color: var(--text-primary);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-content {
+            h2 {
+                color: var(--text-primary);
+            }
+
+            p {
+                color: var(--text-secondary);
+            }
+
+            .card-features {
+                .feature-badge {
+                    background: var(--bg-secondary);
+                    color: var(--text-secondary);
+                }
+            }
+        }
+
+        .card-arrow {
+            background: var(--bg-secondary);
+
+            svg {
+                fill: var(--text-secondary);
+            }
+        }
+    }
+}

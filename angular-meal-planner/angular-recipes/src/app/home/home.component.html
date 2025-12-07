@@ -19,8 +19,8 @@
     <!-- Regular User Content -->
     <div *ngIf="!isAdmin">
         <div class="hero">
-            <h2>Explore <span class="highlight">Culinary</span> Insights</h2>
-            <h6>Discover amazing recipes for every taste</h6>
+            <h2>Quality is  <span class="highlight">Our</span> Recipe!!</h2>
+            
             <div class="categories">
                 <button *ngFor="let category of categories" [class.active]="activeCategory.label === category.label"
                     (click)="handleCategorySelect(category)">

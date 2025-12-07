@@ -20,9 +20,9 @@
     },
     {
       "id": "admin1",
-      "email": "admin@mealrecipe.com",
-      "password": "admin123",
-      "name": "Site Administrator",
+      "email": "adom@mealrecipe.com",
+      "password": "adom17",
+      "name": "Adom",
       "createdAt": "2025-11-04T10:00:00.000Z",
       "totalTimeSpent": 762,
       "lastActive": null,
@@ -666,6 +666,13 @@
       "recipeImage": "https://img.spoonacular.com/recipes/661340-312x231.jpg",
       "updatedAt": "2025-11-13T02:08:13.052Z",
       "createdAt": "2025-11-13T02:08:13.052Z"
+    },
+    {
+      "id": "b3bb",
+      "recipeId": 13,
+      "userId": "admin1",
+      "stars": 5,
+      "createdAt": "2025-12-06T00:46:21.293Z"
     }
   ],
   "myRecipes": [
