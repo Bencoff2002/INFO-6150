@@ -230,14 +230,14 @@ export class LoginComponent implements OnInit, OnDestroy {
                         console.warn('[LoginComponent] - Redirect Decision: Admin -> /');
                         redirectTo = '/';
                     } else {
-                        // Regular user - use fromPage if it's safe, otherwise default to root
+                        // Regular user - use fromPage if it's safe, otherwise default to /home (User Dashboard)
                         // Avoid redirecting to admin pages
-                        if (this.fromPage && !this.fromPage.startsWith('/admin') && !this.fromPage.startsWith('/dashboard')) {
+                        if (this.fromPage && !this.fromPage.startsWith('/admin') && !this.fromPage.startsWith('/dashboard') && this.fromPage !== '/' && this.fromPage !== '/login') {
                             console.warn('[LoginComponent] - Redirect Decision: Regular User -> using fromPage:', this.fromPage);
                             redirectTo = this.fromPage;
                         } else {
-                            console.warn('[LoginComponent] - Redirect Decision: Regular User -> default to /');
-                            redirectTo = '/';
+                            console.warn('[LoginComponent] - Redirect Decision: Regular User -> default to /home');
+                            redirectTo = '/home';
                         }
                     }
                     console.warn('[LoginComponent] Final Redirect Target:', redirectTo);

@@ -1,10 +1,12 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { RecipeCardComponent } from '../../components/recipe-card/recipe-card.component';
 import { AuthService } from '../../services/auth.service';
+import { RefreshService } from '../../services/refresh.service';
 import { environment } from '../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-my-recipe-book',
@@ -13,18 +15,20 @@ import { environment } from '../../../environments/environment';
     templateUrl: './my-recipe-book.component.html',
     styleUrls: ['./my-recipe-book.component.scss']
 })
-export class MyRecipeBookComponent implements OnInit {
+export class MyRecipeBookComponent implements OnInit, OnDestroy {
     recipes: any[] = [];
     loading = true;
     error: string | null = null;
     user: any = null;
+    private refreshSubscription: Subscription | null = null;
 
     constructor(
         private http: HttpClient,
         public router: Router,
         private authService: AuthService,
         private cdr: ChangeDetectorRef,
-        private location: Location
+        private location: Location,
+        private refreshService: RefreshService
     ) { }
 
     async ngOnInit() {
@@ -37,6 +41,18 @@ export class MyRecipeBookComponent implements OnInit {
                 this.cdr.detectChanges();
             }
         });
+
+        // Subscribe to refresh events
+        this.refreshSubscription = this.refreshService.refresh$.subscribe(() => {
+            console.log('[MyRecipeBook] Refresh triggered');
+            this.loadMyRecipes();
+        });
+    }
+
+    ngOnDestroy() {
+        if (this.refreshSubscription) {
+            this.refreshSubscription.unsubscribe();
+        }
     }
 
     async loadMyRecipes() {

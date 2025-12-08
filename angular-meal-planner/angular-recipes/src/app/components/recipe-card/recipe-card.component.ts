@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { UserRecipeService } from '../../services/user-recipe.service';
+import { RefreshService } from '../../services/refresh.service';
 import { stripHtml } from '../../utils/html-utils';
 import { environment } from '../../../environments/environment';
 
@@ -49,7 +50,8 @@ export class RecipeCardComponent implements OnInit {
         private http: HttpClient,
         private authService: AuthService,
         private userRecipeService: UserRecipeService,
-        private elementRef: ElementRef
+        private elementRef: ElementRef,
+        private refreshService: RefreshService
     ) { }
 
     ngOnInit() {
@@ -211,6 +213,7 @@ export class RecipeCardComponent implements OnInit {
 
             const saved: any = await this.http.post(`${this.baseUrl}/myRecipes`, payload).toPromise();
             this.myRecipeId = saved.id;
+            this.refreshService.triggerRefresh();
         } catch (err) {
             console.error('Add to book failed:', err);
         }
@@ -239,6 +242,7 @@ export class RecipeCardComponent implements OnInit {
             await this.http.delete(`${this.baseUrl}/myRecipes/${this.recipe.id}`).toPromise();
             this.deleteDialogOpen = false;
             this.deleted.emit(this.recipe.id);
+            this.refreshService.triggerRefresh();
         } catch (err) {
             console.error('Delete failed:', err);
             alert('Failed to delete recipe');
@@ -286,6 +290,7 @@ export class RecipeCardComponent implements OnInit {
             }
 
             this.ratingDialogOpen = false;
+            this.refreshService.triggerRefresh();
         } catch (err) {
             console.error('Rating submission failed:', err);
         }
@@ -311,6 +316,7 @@ export class RecipeCardComponent implements OnInit {
 
             this.newComment = '';
             this.commentDialogOpen = false;
+            this.refreshService.triggerRefresh();
         } catch (err) {
             console.error('Comment submission failed:', err);
         }

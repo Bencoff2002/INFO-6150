@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { MealPlan, MealPreferences, WeeklyNotes, SavedMealPlan, DAYS_OF_WEEK, MEAL_TYPES } from '../models/meal-plan.model';
+import { RefreshService } from './refresh.service';
 
 @Injectable({ providedIn: 'root' })
 export class MealPlanService {
     private baseUrl = environment.jsonServerUrl;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private refreshService: RefreshService) { }
 
     // Meal Plan CRUD
     async getMealPlans(userId: string): Promise<MealPlan[]> {
@@ -25,21 +26,26 @@ export class MealPlanService {
             id: this.generateId(),
             createdAt: new Date().toISOString()
         };
-        return await lastValueFrom(
+        const result = await lastValueFrom(
             this.http.post<MealPlan>(`${this.baseUrl}/mealPlans`, newPlan)
         );
+        this.refreshService.triggerRefresh();
+        return result;
     }
 
     async updateMealPlan(id: string, plan: Partial<MealPlan>): Promise<MealPlan> {
-        return await lastValueFrom(
+        const result = await lastValueFrom(
             this.http.put<MealPlan>(`${this.baseUrl}/mealPlans/${id}`, plan)
         );
+        this.refreshService.triggerRefresh();
+        return result;
     }
 
     async deleteMealPlan(id: string): Promise<void> {
         await lastValueFrom(
             this.http.delete(`${this.baseUrl}/mealPlans/${id}`)
         );
+        this.refreshService.triggerRefresh();
     }
 
     // Weekly Notes
