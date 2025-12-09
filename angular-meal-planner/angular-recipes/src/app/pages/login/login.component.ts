@@ -126,18 +126,26 @@ export class LoginComponent implements OnInit, OnDestroy {
         if (lockoutEndStr) {
             const lockoutEnd = parseInt(lockoutEndStr, 10);
             if (lockoutEnd > Date.now()) {
+                console.log('[LoginComponent] Account is locked until:', new Date(lockoutEnd).toLocaleTimeString());
                 this.isLocked = true;
                 this.lockoutEndTime = lockoutEnd;
                 this.updateRemainingTime();
+                this.cdr.detectChanges(); // Force update immediately
+
                 // Start timer
                 this.lockoutInterval = setInterval(() => {
                     this.updateRemainingTime();
+                    this.cdr.detectChanges(); // Force update on every tick
+
                     if (!this.isLocked) {
+                        console.log('[LoginComponent] Lockout expired');
                         clearInterval(this.lockoutInterval);
                         this.showPasswordChangePrompt = true;
+                        this.cdr.detectChanges();
                     }
                 }, 1000);
             } else {
+                console.log('[LoginComponent] Lockout expired (checked on load)');
                 localStorage.removeItem(`lockoutEnd_${email}`);
                 this.isLocked = false;
             }
@@ -147,6 +155,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     updateRemainingTime() {
         if (this.lockoutEndTime) {
             const remaining = Math.ceil((this.lockoutEndTime - Date.now()) / 1000);
+            console.log('[LoginComponent] Remaining time:', remaining);
             if (remaining > 0) {
                 this.remainingTime = remaining;
             } else {
@@ -361,7 +370,13 @@ export class LoginComponent implements OnInit, OnDestroy {
             // Use includes to be safer against minor variations
             if (e.message && (e.message === 'Invalid email or password' || e.message.includes('Invalid email'))) {
                 console.log('[LoginComponent] Detected invalid credentials error');
-                this.error = 'Your email or password is incorrect';
+
+                // Calculate remaining attempts
+                const email = formData.email;
+                const attempts = parseInt(localStorage.getItem(`loginAttempts_${email}`) || '0', 10);
+                const remaining = 3 - attempts;
+
+                this.error = `Your email or password is incorrect. (You have ${remaining} attempt${remaining === 1 ? '' : 's'} left)`;
                 this.showErrorDialog = true;
                 this.cdr.detectChanges(); // Force update
 
