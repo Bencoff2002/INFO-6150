@@ -16,6 +16,10 @@ interface SharedRecipe {
     createdAt: string;
     message?: string;
     recipe?: any;
+    // Add optional properties from DB
+    userId?: string;
+    userName?: string;
+    sharedAt?: string;
 }
 
 @Component({
@@ -61,24 +65,28 @@ export class SharedRecipesComponent implements OnInit {
 
         try {
             // Fetch shared recipes from JSON server
-            const sharedRecipes: SharedRecipe[] = await this.http.get<SharedRecipe[]>(
+            const sharedRecipes: any[] = await this.http.get<any[]>(
                 `${environment.jsonServerUrl}/sharedRecipes`
             ).toPromise() || [];
 
             console.log('Fetched shared recipes:', sharedRecipes);
 
-            // Filter out recipes shared by the current user and sort by date (newest first)
+            // Map to consistent format and sort by date (newest first)
             this.sharedRecipes = sharedRecipes
-                .filter(share => share.sharedBy !== this.user.id)
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .filter(share => share.recipeImage && share.recipeImage.trim() !== '')
                 .map(share => ({
                     ...share,
+                    // Normalize fields
+                    sharedBy: share.userId || share.sharedBy,
+                    sharedByName: share.userName || share.sharedByName,
+                    createdAt: share.sharedAt || share.createdAt,
                     recipe: {
                         id: share.recipeId,
                         title: share.recipeTitle,
                         image: share.recipeImage
                     }
-                }));
+                }))
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
             this.loading = false;
             this.cdr.detectChanges();

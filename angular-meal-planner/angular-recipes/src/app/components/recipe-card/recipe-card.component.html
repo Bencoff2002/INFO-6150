@@ -4,9 +4,9 @@
 
     <!-- Image Container with Actions Overlay -->
     <div class="image-container">
-        <img [src]="recipe.image" [alt]="recipe.title" class="recipe-image" />
+        <img [src]="recipe.image" [alt]="recipe.title" class="recipe-image" (error)="handleImageError($event)" />
 
-        <div class="actions-overlay">
+        <div class="actions-overlay" *ngIf="!hideActions">
             <!-- Favorite Button -->
             <button class="action-btn favorite-btn" (click)="toggleFavorite($event)" *ngIf="user && !sharedByName"
                 aria-label="Toggle favorite" [title]="isFavorite ? 'Remove from favorites' : 'Add to favorites'">
@@ -198,7 +198,8 @@
         <h2 class="dialog-title">{{ shareSuccess ? 'Recipe Shared!' : 'Would you share this recipe?' }}</h2>
         <p class="dialog-content">
             {{ shareSuccess
-            ? '"' + recipe.title + '" has been shared with the community successfully 'You\'ve added "' + recipe.title + '" to your favorites! Would you like to share this recipe with others?'
+            ? '"' + recipe.title + '" has been shared with the community successfully 'You\'ve added "' + recipe.title +
+            '" to your favorites! Would you like to share this recipe with others?'
             }}
         </p>
         <div class="dialog-actions" *ngIf="!shareSuccess">
@@ -229,7 +230,7 @@
                     aria-label="Shareable recipe link" title="Click to select link" (click)="$event.target.select()" />
                 <button class="dialog-btn primary copy-link-btn" (click)="handleCopyClick($event)"
                     aria-label="Copy link to clipboard">
-                    {{ copySuccess ? '✓ Copied!' : 'Copy Link' }}
+                    {{ copySuccess ? '✓ Shared & Copied!' : 'Share & Copy Link' }}
                 </button>
             </div>
         </div>

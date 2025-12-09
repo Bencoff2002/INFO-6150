@@ -1,0 +1,86 @@
+<div class="dialog-overlay" (click)="onCancel()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="onCancel()" aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+        </button>
+
+        <h2 class="dialog-title">Load Saved Meal Plan</h2>
+
+        <div class="dialog-content">
+            <div *ngIf="savedPlans.length === 0" class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 24 24" width="48">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" />
+                </svg>
+                <p>No saved meal plans yet</p>
+                <p class="empty-hint">Save your current meal plan to reuse it later!</p>
+            </div>
+
+            <div *ngIf="savedPlans.length > 0" class="plans-list">
+                <div *ngFor="let plan of savedPlans" class="plan-card">
+                    <div class="plan-header">
+                        <h3 class="plan-name">{{plan.name}}</h3>
+                        <span class="meal-count">{{plan.meals.length}} meals</span>
+                    </div>
+                    <p *ngIf="plan.description" class="plan-description">{{plan.description}}</p>
+                    <p class="plan-date">Created: {{formatDate(plan.createdAt)}}</p>
+                    <div class="plan-actions">
+                        <button class="btn btn-primary" (click)="onLoad(plan)">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 24 24" width="18">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z" />
+                            </svg>
+                            Load
+                        </button>
+                        <button class="btn btn-danger" (click)="onDelete(plan)">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 24 24" width="18">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dialog-actions">
+            <button class="btn btn-secondary" (click)="onCancel()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Dialog -->
+<div *ngIf="deleteConfirmPlan" class="dialog-overlay" (click)="cancelDelete()">
+    <div class="dialog small" (click)="$event.stopPropagation()">
+        <h2 class="dialog-title">Delete Saved Plan?</h2>
+        <p class="dialog-text">
+            Are you sure you want to delete "{{deleteConfirmPlan.name}}"? This action cannot be undone.
+        </p>
+        <div class="dialog-actions">
+            <button class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+            <button class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Load Confirmation Dialog -->
+<div *ngIf="loadConfirmPlan" class="dialog-overlay" (click)="cancelLoad()">
+    <div class="dialog small" (click)="$event.stopPropagation()">
+        <h2 class="dialog-title">Load Meal Plan?</h2>
+        <p class="dialog-text">
+            This will replace your current meal plan with "{{loadConfirmPlan.name}}". Continue?
+        </p>
+        <div class="dialog-actions">
+            <button class="btn btn-secondary" (click)="cancelLoad()">Cancel</button>
+            <button class="btn btn-primary" (click)="confirmLoad()">Load Plan</button>
+        </div>
+    </div>
+</div>

@@ -25,7 +25,7 @@
 
         <!-- Recipe Header -->
         <div class="recipe-header">
-            <img [src]="recipe.image" [alt]="recipe.title" class="recipe-image">
+            <img [src]="recipe.image" [alt]="recipe.title" class="recipe-image" (error)="handleImageError($event)">
             <h1 class="recipe-title">{{ recipe.title }}</h1>
             <div *ngIf="recipe.summary" class="recipe-summary" [innerHTML]="sanitizeHtml(recipe.summary)">
             </div>

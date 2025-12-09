@@ -1,0 +1,70 @@
+<div class="dialog-overlay" (click)="onCancel()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="onCancel()" aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+        </button>
+
+        <h2 class="dialog-title">Meal Plan Preferences</h2>
+
+        <div class="dialog-content">
+            <p class="description">
+                Customize your auto-generated meal plan based on your dietary preferences and restrictions.
+            </p>
+
+            <div class="form-section">
+                <h3>Dietary Preferences</h3>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" [(ngModel)]="localPreferences.isVegetarian">
+                    <span>Vegetarian (exclude meat and fish)</span>
+                </label>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" [(ngModel)]="localPreferences.isWeightLoss">
+                    <span>Weight Loss (exclude high-calorie foods)</span>
+                </label>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" [(ngModel)]="localPreferences.includeSnacks">
+                    <span>Include Snacks (add daily snacks to meal plan)</span>
+                </label>
+            </div>
+
+            <div class="form-section">
+                <h3>Allergies & Restrictions</h3>
+                <p class="section-description">
+                    Add ingredients or foods you want to avoid.
+                </p>
+
+                <div class="allergy-input-group">
+                    <input type="text" [(ngModel)]="allergyInput" (keypress)="onKeyPress($event)"
+                        placeholder="e.g., nuts, dairy, gluten" class="form-control">
+                    <button class="btn btn-secondary" (click)="addAllergy()" [disabled]="!allergyInput.trim()">
+                        Add
+                    </button>
+                </div>
+
+                <div *ngIf="localPreferences.allergies.length > 0" class="allergy-chips">
+                    <div *ngFor="let allergy of localPreferences.allergies" class="chip">
+                        {{allergy}}
+                        <button class="chip-delete" (click)="removeAllergy(allergy)" aria-label="Remove allergy">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="16">
+                                <path
+                                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dialog-actions">
+            <button class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+            <button class="btn btn-primary" (click)="onGenerate()">Generate Meal Plan</button>
+        </div>
+    </div>
+</div>

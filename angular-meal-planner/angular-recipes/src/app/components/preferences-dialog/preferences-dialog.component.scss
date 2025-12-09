@@ -1,0 +1,253 @@
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.dialog {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2), 0 24px 38px 3px rgba(0, 0, 0, 0.14);
+    animation: slideIn 0.3s ease-out;
+    position: relative;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.close-btn svg {
+    fill: rgba(0, 0, 0, 0.54);
+}
+
+.dialog-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 0 0 16px 0;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.description {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.875rem;
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.form-section {
+    margin-bottom: 24px;
+}
+
+.form-section h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 12px 0;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.section-description {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.875rem;
+    margin: 0 0 12px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.allergy-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.form-control {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #FF9F29;
+    border-width: 2px;
+    padding: 9px 11px;
+}
+
+.allergy-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: #FF9F29;
+    color: white;
+    border-radius: 16px;
+    font-size: 0.875rem;
+}
+
+.chip-delete {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.chip-delete:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.chip-delete svg {
+    fill: white;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #FF9F29;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(255, 159, 41, 0.04);
+}
+
+.btn-secondary:disabled {
+    color: rgba(0, 0, 0, 0.26);
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: #FF9F29;
+    color: white;
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14);
+}
+
+.btn-primary:hover {
+    background: #e68a1c;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14);
+}
+
+/* Dark Theme Styles */
+:host-context(body.dark-theme) .dialog {
+    background: var(--card-bg, #1e1e1e);
+}
+
+:host-context(body.dark-theme) .dialog-title,
+:host-context(body.dark-theme) .form-section h3,
+:host-context(body.dark-theme) .checkbox-label span {
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .description,
+:host-context(body.dark-theme) .section-description {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .form-control {
+    background: #2d2d2d;
+    border-color: #444;
+    color: var(--text-primary, #ffffff);
+}
+
+:host-context(body.dark-theme) .close-btn svg {
+    fill: var(--text-secondary, #b0b0b0);
+}
+
+:host-context(body.dark-theme) .close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+:host-context(body.dark-theme) .btn-primary {
+    color: #000;
+}

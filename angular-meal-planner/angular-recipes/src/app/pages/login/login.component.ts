@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     showPasswordChangePrompt = false;
     isBlockedUser = false;
     private routerSubscription: Subscription | null = null;
+    private lockoutInterval: any;
     fromPage: string | null = null;
 
     // ... existing properties ...
@@ -108,10 +109,19 @@ export class LoginComponent implements OnInit, OnDestroy {
         if (this.routerSubscription) {
             this.routerSubscription.unsubscribe();
         }
+        if (this.lockoutInterval) {
+            clearInterval(this.lockoutInterval);
+        }
     }
 
     checkLockout(email: string) {
         if (!email) return;
+
+        // Clear existing interval if any
+        if (this.lockoutInterval) {
+            clearInterval(this.lockoutInterval);
+        }
+
         const lockoutEndStr = localStorage.getItem(`lockoutEnd_${email}`);
         if (lockoutEndStr) {
             const lockoutEnd = parseInt(lockoutEndStr, 10);
@@ -120,10 +130,10 @@ export class LoginComponent implements OnInit, OnDestroy {
                 this.lockoutEndTime = lockoutEnd;
                 this.updateRemainingTime();
                 // Start timer
-                const interval = setInterval(() => {
+                this.lockoutInterval = setInterval(() => {
                     this.updateRemainingTime();
                     if (!this.isLocked) {
-                        clearInterval(interval);
+                        clearInterval(this.lockoutInterval);
                         this.showPasswordChangePrompt = true;
                     }
                 }, 1000);

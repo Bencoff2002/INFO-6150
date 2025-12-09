@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, OnInit, HostListener, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, HostListener, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { NotificationService, Notification } from '../../services/notification.service';
 
 @Component({
     selector: 'app-navbar',
@@ -12,7 +13,7 @@ import { ThemeService } from '../../services/theme.service';
     templateUrl: './navbar.component.html',
     styleUrls: ['./navbar.component.scss']
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
     @Input() searchTerm: string = '';
     @Input() loading: boolean = false;
     @Output() search = new EventEmitter<string>();
@@ -23,20 +24,37 @@ export class NavbarComponent implements OnInit {
     dashboardMenuOpen = false;
     reportsMenuOpen = false;
     adminMenuOpen = false;
+    notificationsMenuOpen = false;
     isDarkMode = false;
+
+    notifications: Notification[] = [];
+    unreadCount = 0;
+    private validationInterval: any;
 
     constructor(
         private authService: AuthService,
         private router: Router,
         private elementRef: ElementRef,
         public themeService: ThemeService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private notificationService: NotificationService
     ) { }
 
     ngOnInit() {
         this.authService.user$.subscribe(user => {
             console.log('[Navbar] User updated:', user?.email, 'isBlocked:', user?.isBlocked);
             this.user = user;
+            this.cdr.detectChanges();
+        });
+
+        // Subscribe to notifications
+        this.notificationService.notifications$.subscribe(notifications => {
+            this.notifications = notifications;
+            this.cdr.detectChanges();
+        });
+
+        this.notificationService.unreadCount$.subscribe(count => {
+            this.unreadCount = count;
             this.cdr.detectChanges();
         });
 
@@ -48,7 +66,7 @@ export class NavbarComponent implements OnInit {
         // Periodically validate user status to catch blocks in real-time
         if (this.authService.isAuthenticated()) {
             console.log('[Navbar] Starting periodic validation check (every 30 seconds)');
-            setInterval(() => {
+            this.validationInterval = setInterval(() => {
                 console.log('[Navbar] Running periodic validation check');
                 const currentUser = this.authService.getCurrentUser();
                 this.authService.validateUserStatus().subscribe(isValid => {
@@ -69,8 +87,37 @@ export class NavbarComponent implements OnInit {
         }
     }
 
+    ngOnDestroy() {
+        if (this.validationInterval) {
+            console.log('[Navbar] Clearing validation interval');
+            clearInterval(this.validationInterval);
+        }
+    }
+
     toggleTheme() {
         this.themeService.toggleTheme();
+    }
+
+    toggleNotificationsMenu() {
+        this.notificationsMenuOpen = !this.notificationsMenuOpen;
+        if (this.notificationsMenuOpen) {
+            this.userMenuOpen = false;
+            this.dashboardMenuOpen = false;
+            this.reportsMenuOpen = false;
+            this.adminMenuOpen = false;
+        }
+    }
+
+    handleNotificationClick(notification: Notification) {
+        this.notificationService.markAsRead(notification.id);
+        this.notificationsMenuOpen = false;
+        this.router.navigate(['/shared', notification.recipeId]);
+    }
+
+    markAllAsRead() {
+        if (this.user) {
+            this.notificationService.markAllAsRead(this.user.id);
+        }
     }
 
     @HostListener('document:click', ['$event'])
@@ -82,6 +129,7 @@ export class NavbarComponent implements OnInit {
             this.dashboardMenuOpen = false;
             this.reportsMenuOpen = false;
             this.adminMenuOpen = false;
+            this.notificationsMenuOpen = false;
         }
     }
 

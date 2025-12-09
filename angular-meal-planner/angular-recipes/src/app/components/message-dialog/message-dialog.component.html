@@ -1,0 +1,15 @@
+<div class="dialog-overlay" (click)="onClose()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+        <div class="dialog-header" [ngClass]="type">
+            <h2 class="dialog-title">{{ title }}</h2>
+        </div>
+
+        <div class="dialog-content">
+            <p class="message">{{ message }}</p>
+        </div>
+
+        <div class="dialog-actions">
+            <button class="btn" (click)="onClose()">OK</button>
+        </div>
+    </div>
+</div>

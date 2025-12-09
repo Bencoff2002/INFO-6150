@@ -5,10 +5,8 @@ import { AuthService } from './services/auth.service';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
-  template: `
-    <router-outlet></router-outlet>
-  `,
-  styles: [],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
 })
 export class App implements OnInit {
   protected readonly title = signal('angular-meal-planner');

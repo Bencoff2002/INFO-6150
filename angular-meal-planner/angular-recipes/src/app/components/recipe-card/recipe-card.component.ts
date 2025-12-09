@@ -8,6 +8,7 @@ import { UserRecipeService } from '../../services/user-recipe.service';
 import { RefreshService } from '../../services/refresh.service';
 import { stripHtml } from '../../utils/html-utils';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
     selector: 'app-recipe-card',
@@ -23,6 +24,7 @@ export class RecipeCardComponent implements OnInit {
     @Input() user: any = null;
     @Input() favorites: any[] = [];
     @Input() sharedByName: string | null = null;
+    @Input() hideActions: boolean = false;
 
     @Output() open = new EventEmitter<any>();
     @Output() deleted = new EventEmitter<string>();
@@ -51,7 +53,8 @@ export class RecipeCardComponent implements OnInit {
         private authService: AuthService,
         private userRecipeService: UserRecipeService,
         private elementRef: ElementRef,
-        private refreshService: RefreshService
+        private refreshService: RefreshService,
+        private notificationService: NotificationService
     ) { }
 
     ngOnInit() {
@@ -322,28 +325,54 @@ export class RecipeCardComponent implements OnInit {
         }
     }
 
+    async shareRecipeToCommunity() {
+        try {
+            // Check if recipe is already shared
+            const existingShares = await this.http.get<any[]>(
+                `${this.baseUrl}/sharedRecipes?recipeId=${this.recipe.id}`
+            ).toPromise() || [];
+
+            if (existingShares.length === 0) {
+                // Only save if not already shared
+                const sharedRecipe = {
+                    userId: this.user.id,
+                    userName: this.user.name || this.user.email,
+                    recipeId: this.recipe.id,
+                    recipeTitle: this.recipe.title,
+                    recipeImage: this.recipe.image,
+                    recipeSummary: this.recipe.summary || 'Delicious recipe shared by ' + (this.user.name || this.user.email),
+                    sharedAt: new Date().toISOString()
+                };
+
+                await this.http.post(`${this.baseUrl}/sharedRecipes`, sharedRecipe).toPromise();
+            } else {
+                console.log('Recipe already shared, skipping save but sending notifications');
+            }
+
+            // Notify all other users (always notify so the link is shared)
+            await this.notificationService.notifyAllUsers({
+                senderId: this.user.id,
+                senderName: this.user.name || this.user.email,
+                recipeId: this.recipe.id,
+                recipeTitle: this.recipe.title,
+                type: 'shared_recipe'
+            });
+        } catch (err) {
+            console.error('Error in shareRecipeToCommunity:', err);
+            throw err;
+        }
+    }
+
     async handleShareYes() {
         try {
             this.shareLoading = true;
-
-            const sharedRecipe = {
-                userId: this.user.id,
-                userName: this.user.name || this.user.email,
-                recipeId: this.recipe.id,
-                recipeTitle: this.recipe.title,
-                recipeImage: this.recipe.image,
-                recipeSummary: this.recipe.summary || 'Delicious recipe shared by ' + (this.user.name || this.user.email),
-                sharedAt: new Date().toISOString()
-            };
-
-            await this.http.post(`${this.baseUrl}/sharedRecipes`, sharedRecipe).toPromise();
-
+            await this.shareRecipeToCommunity();
             this.shareSuccess = true;
 
             setTimeout(() => {
                 this.sharePromptOpen = false;
                 this.shareSuccess = false;
-            }, 1500);
+            }, 1000);
         } catch (err) {
             console.error('Failed to share recipe:', err);
             this.sharePromptOpen = false;
@@ -395,14 +424,32 @@ export class RecipeCardComponent implements OnInit {
         }, 2000);
     }
 
-    handleCopyClick(event: Event) {
+    async handleCopyClick(event: Event) {
         this.copyShareLink();
+
+        // Also share to community
+        try {
+            await this.shareRecipeToCommunity();
+        } catch (err) {
+            console.error('Failed to share recipe from copy link:', err);
+        }
+
         // Blur the button to ensure state updates are visible
         const target = event.target as HTMLElement;
         target?.blur();
+
+        // Close dialog after 1 second
+        setTimeout(() => {
+            this.shareLinkDialogOpen = false;
+            this.copySuccess = false;
+        }, 1000);
     }
 
     getStrippedSummary(): string {
         return stripHtml(this.recipe.summary || '');
+    }
+
+    handleImageError(event: any) {
+        event.target.src = 'https://placehold.co/556x370?text=No+Image';
     }
 }

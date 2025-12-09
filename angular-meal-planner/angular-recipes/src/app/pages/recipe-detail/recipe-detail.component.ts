@@ -64,8 +64,9 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
         try {
             let data: any;
 
-            if (this.isCustomRecipe) {
-                console.log('Fetching custom recipe from myRecipes API');
+            // Check if it's a custom recipe (explicitly flagged or non-numeric ID)
+            if (this.isCustomRecipe || isNaN(Number(id))) {
+                console.log('Fetching custom recipe from myRecipes API (ID is non-numeric or isCustomRecipe is true)');
                 // Fetch from myRecipes API
                 const response = await this.http.get<any>(
                     `${environment.jsonServerUrl}/myRecipes/${id}`
@@ -124,6 +125,10 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     getBackButtonText(): string {
         const state = this.location.getState() as any;
         return state?.fromName || '';
+    }
+
+    handleImageError(event: any) {
+        event.target.src = 'https://placehold.co/556x370?text=No+Image';
     }
 
     get typeof() {
