@@ -10,7 +10,7 @@ export class SpoonacularApiService {
     private apiKey = '';
 
     constructor(private http: HttpClient) {
-        this.apiKey = environment.spoonacularApiKey;
+        this.apiKey = atob(environment.spoonacularApiKey);
     }
 
     async searchRecipes(query: string, offset = 0, number = 30, category: any = ''): Promise<any> {
